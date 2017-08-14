@@ -66,11 +66,36 @@ namespace System10.Controllers
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
 
 
+                //     var authType = Request.HttpContext.Authentication;
+
+
                 //using (PrincipalContext pc = new PrincipalContext(ContextType.Domain, "YOURDOMAIN"))
                 //{
                 //    // validate the credentials
                 //    bool isValid = pc.ValidateCredentials("myuser", "mypassword");
                 //}
+
+
+                //WindowsIdentity loggedInUser = WindowsIdentity.GetCurrent();
+                //if (loggedInUser.User.AccountDomainSid.Value == "S-1-5-21-2610387755-854405893-2624003543")
+                //{
+
+                //    var winLoginNameTrim = loggedInUser.Name.Split('\\');
+                //    var winLoginName = winLoginNameTrim.Last();
+
+                //    var user = new ApplicationUser { UserName = winLoginName, Email = winLoginName };
+
+                //    var userC = await _userManager.CreateAsync(user);
+                //    if (userC.Succeeded)
+                //    {
+                //        var results = await _userManager.AddLoginAsync(user, new UserLoginInfo("", "", "disply"));
+                //    }
+                //    await _signInManager.SignInAsync(user, isPersistent: false);
+                //    return RedirectToLocal(returnUrl);
+
+                //}
+
+
 
                 using (var cn = new LdapConnection())
                 {
@@ -81,11 +106,11 @@ namespace System10.Controllers
 
                     cn.SecureSocketLayer = true;
                     cn.Connect("hqmsdcw01.pomeroy.msft", 636);
-                //    string Username = WindowsIdentity.GetCurrent().Name.ToString();
+                    //    string Username = WindowsIdentity.GetCurrent().Name.ToString();
 
-//var CurLoggedUser = User.Identity.IsAuthenticated;
+                    //var CurLoggedUser = User.Identity.IsAuthenticated;
 
-                 //   string domain = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainNamel;
+                    //   string domain = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainNamel;
 
 
 
@@ -95,12 +120,11 @@ namespace System10.Controllers
                         _logger.LogInformation(1, "User logged in.");
                         var modelEmail = model.Email.Split('\\');
                         var userName = modelEmail.Last();
-                   
-                             var user = new ApplicationUser { UserName = userName, Email = userName };
+                        var user = new ApplicationUser { UserName = userName, Email = userName };
                         var userC = await _userManager.CreateAsync(user);
                         if (userC.Succeeded)
                         {
-                            var results = await _userManager.AddLoginAsync(user, new UserLoginInfo("", "", "disply"));
+                            var results = await _userManager.AddLoginAsync(user, new UserLoginInfo("WindowsADuser", "", userName));
                         }
                         await _signInManager.SignInAsync(user, isPersistent: false);
                         return RedirectToLocal(returnUrl);
@@ -113,15 +137,9 @@ namespace System10.Controllers
 
 
 
-
-
-
-
                     //LdapAttribute attr = new LdapAttribute("userPassword", testPassword);
 
                     //    bool correct = cn.Compare(objectDN, attr);
-
-
 
 
                     // call ldap op
@@ -154,6 +172,11 @@ namespace System10.Controllers
             // If we got this far, something failed, redisplay form
             return View(model);
         }
+
+
+
+
+
 
         //
         // GET: /Account/Register
@@ -204,7 +227,7 @@ namespace System10.Controllers
         {
             await _signInManager.SignOutAsync();
             _logger.LogInformation(4, "User logged out.");
-            return RedirectToAction(nameof(HomeController.Index), "Home");
+            return RedirectToAction(nameof(HomeController.About), "Home");
         }
 
         //
