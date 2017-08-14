@@ -41,22 +41,28 @@ namespace System10.Controllers
         {
             if (!_signInManager.IsSignedIn(User))
             {
-                WindowsIdentity loggedInUser = WindowsIdentity.GetCurrent();
-                if (loggedInUser.User.AccountDomainSid.Value == "S-1-5-21-2610387755-854405893-2624003543")
+                try
                 {
-                    var winLoginNameTrim = loggedInUser.Name.Split('\\');
-                    var winLoginName = winLoginNameTrim.Last();
-                    var user = new ApplicationUser { UserName = winLoginName, Email = winLoginName };
-                    var userC = await _userManager.CreateAsync(user);
-                    if (userC.Succeeded)
+                    WindowsIdentity loggedInUser = WindowsIdentity.GetCurrent();
+                    if (loggedInUser?.User?.AccountDomainSid?.Value == "S-1-5-21-2610387755-854405893-2624003543")
                     {
-                        var results = await _userManager.AddLoginAsync(user, new UserLoginInfo("WindowsUser", "", "disply"));
+                        var winLoginNameTrim = loggedInUser.Name.Split('\\');
+                        var winLoginName = winLoginNameTrim.Last();
+                        var user = new ApplicationUser { UserName = winLoginName, Email = winLoginName };
+                        var userC = await _userManager.CreateAsync(user);
+                        if (userC.Succeeded)
+                        {
+                            var results = await _userManager.AddLoginAsync(user, new UserLoginInfo("WindowsUser", "", "disply"));
+                        }
+                        await _signInManager.SignInAsync(user, isPersistent: false);
                     }
-                    await _signInManager.SignInAsync(user, isPersistent: false);
+                }
+                catch
+                {
+
                 }
             }
-          //  return View();
-
+            //  return View();
             return RedirectToAction(nameof(HomeController.About), "Home");
         }
 
