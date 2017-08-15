@@ -55,7 +55,8 @@ namespace System10
                 .AddDefaultTokenProviders();
 
 
-        
+            services.Configure<IISOptions>(options => options.ForwardWindowsAuthentication = true);
+
 
             services.AddMvc();
 
@@ -82,7 +83,7 @@ namespace System10
 
             app.UseApplicationInsightsRequestTelemetry();
 
-            if (env.IsDevelopment())
+          if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseDatabaseErrorPage();

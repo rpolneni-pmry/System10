@@ -11,6 +11,7 @@ using System.Security.Claims;
 
 namespace System10.Controllers
 {
+    
     public class HomeController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -39,11 +40,21 @@ namespace System10.Controllers
 
         public async Task<IActionResult> Index()
         {
-            if (!_signInManager.IsSignedIn(User))
+            string dString = "tes";
+            //if (!_signInManager.IsSignedIn(User))
             {
                 try
                 {
-                    WindowsIdentity loggedInUser = WindowsIdentity.GetCurrent();
+               //     WindowsIdentity loggedInUser = WindowsIdentity.GetCurrent();
+
+                    var logusr = User.Identity.Name;
+
+                    var loggedInUser = HttpContext.User.Identity as WindowsIdentity;
+
+
+
+
+                    dString = loggedInUser.Name;
                     if (loggedInUser?.User?.AccountDomainSid?.Value == "S-1-5-21-2610387755-854405893-2624003543")
                     {
                         var winLoginNameTrim = loggedInUser.Name.Split('\\');
@@ -61,16 +72,20 @@ namespace System10.Controllers
                 {
 
                 }
+                
             }
             //  return View();
-            return RedirectToAction(nameof(HomeController.About), "Home");
+            return RedirectToAction(nameof(HomeController.About), "Home", new { debug = dString });
         }
 
 
-        [Authorize]
-        public IActionResult About()
+        //[Authorize]
+        public IActionResult About(string debug="")
         {
-            ViewData["Message"] = "Your application description page.";
+            var loggedInUser = HttpContext.User.Identity as WindowsIdentity;
+
+
+            ViewData["Message"] = "Your application description page "+ debug+" |"+ loggedInUser;
             return View();
         }
 
@@ -83,6 +98,7 @@ namespace System10.Controllers
 
         public IActionResult Error()
         {
+
             return View();
         }
     }
