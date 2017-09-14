@@ -15,6 +15,7 @@ using System10.Data;
 using System10.Models;
 using System10.Services;
 
+
 namespace System10
 {
     public class Startup
@@ -53,7 +54,6 @@ namespace System10
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
-
 
             services.Configure<IISOptions>(options => options.ForwardWindowsAuthentication = true);
 
@@ -114,7 +114,30 @@ namespace System10
                 ClientId = Configuration["Authentication:Microsoft:ApplicationId"],
                 ClientSecret = Configuration["Authentication:Microsoft:Password"]
             });
+            app.UseGoogleAuthentication(new GoogleOptions()
+            {
+                ClientId = Configuration["Authentication:Google:ClientId"],
+                ClientSecret = Configuration["Authentication:Google:ClientSecret"]
+            });
 
+            app.UseTwitterAuthentication(new TwitterOptions()
+            {
+                ConsumerKey = Configuration["Authentication:Twitter:ConsumerKey"],
+                ConsumerSecret = Configuration["Authentication:Twitter:ConsumerSecret"]
+            });
+           
+
+            app.UseLinkedInAuthentication(new LinkedInOptions()
+            {
+                ClientId = Configuration["Authentication:LinkedIn:ClientId"],
+                ClientSecret = Configuration["Authentication:LinkedIn:ClientSecret"]
+                
+            });
+            app.UseFacebookAuthentication(new FacebookOptions()
+            {
+                AppId = Configuration["Authentication:Facebook:AppId"],
+                AppSecret = Configuration["Authentication:Facebook:AppSecret"]
+            });
 
             app.UseMvc(routes =>
             {
