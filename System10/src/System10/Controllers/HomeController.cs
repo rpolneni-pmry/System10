@@ -1,105 +1,174 @@
-﻿using System.Linq;
-using System.Security.Principal;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System10.Models;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
+using System.Text;
+using System.Security.Principal;
+using Novell.Directory.Ldap;
+using Microsoft.AspNetCore.Http.Features;
 using System10.Services;
-using System.Security.Claims;
 
 namespace System10.Controllers
 {
-    
     public class HomeController : Controller
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly SignInManager<ApplicationUser> _signInManager;
 
-        private readonly IEmailSender _emailSender;
-        private readonly ISmsSender _smsSender;
-        private readonly ILogger _logger;
-
-
-
-        public HomeController(
-    UserManager<ApplicationUser> userManager,
-    SignInManager<ApplicationUser> signInManager,
-    IEmailSender emailSender,
-    ISmsSender smsSender,
-    ILoggerFactory loggerFactory)
+        private readonly System10Context _context;
+        public HomeController(System10Context context)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
-            _emailSender = emailSender;
-            _smsSender = smsSender;
-            _logger = loggerFactory.CreateLogger<AccountController>();
+            
+            _context = context;
         }
-
-
-        public async Task<IActionResult> Index()
+        // same network authentication using windows identity
+        public IActionResult Index()
         {
-            string dString = "tes";
-            //if (!_signInManager.IsSignedIn(User))
-            {
-                try
-                {
-               //     WindowsIdentity loggedInUser = WindowsIdentity.GetCurrent();
-
-                    var logusr = User.Identity.Name;
-
-                    var loggedInUser = HttpContext.User.Identity as WindowsIdentity;
-
-
-
-
-                    dString = loggedInUser.Name;
-                    if (loggedInUser?.User?.AccountDomainSid?.Value == "S-1-5-21-2610387755-854405893-2624003543")
-                    {
-                        var winLoginNameTrim = loggedInUser.Name.Split('\\');
-                        var winLoginName = winLoginNameTrim.Last();
-                        var user = new ApplicationUser { UserName = winLoginName, Email = winLoginName };
-                        var userC = await _userManager.CreateAsync(user);
-                        if (userC.Succeeded)
-                        {
-                            var results = await _userManager.AddLoginAsync(user, new UserLoginInfo("WindowsUser", "", "disply"));
-                        }
-                        await _signInManager.SignInAsync(user, isPersistent: false);
-                    }
-                }
-                catch
-                {
-
-                }
+            return View();
                 
-            }
-            //  return View();
-            return RedirectToAction(nameof(HomeController.About), "Home", new { debug = dString });
         }
-
-
-        //[Authorize]
-        public IActionResult About(string debug="")
+      
+        public IActionResult About()
         {
-            var loggedInUser = HttpContext.User.Identity as WindowsIdentity;
+            ViewData["Message"] = "Your application description page.";
 
-
-            ViewData["Message"] = "Your application description page "+ debug+" |"+ loggedInUser;
             return View();
         }
 
-        [Authorize]
         public IActionResult Contact()
         {
             ViewData["Message"] = "Your contact page.";
+
             return View();
         }
 
         public IActionResult Error()
         {
-
             return View();
         }
+
+
+        //public IActionResult Login()
+        //{
+        //    return View();
+        //}
+        //private string GetUserNameFromEmail(string email)
+        //{
+        //    String[] userData = email.Split(new[] { '@' });
+        //  //  String[] userData = email.Split(new[] { '\\' });
+        //    String username = userData[0];
+        //    return username;
+        //}
+        //[HttpPost]
+        ////Active directory users login
+        //public IActionResult Login(Models.LoginViewModel userr,string ReturnUrl)
+        //{
+        //    //Authenticating using Active Directory
+        //    using (var cn = new LdapConnection())
+        //    {
+        //        // connect
+        //        //   cn.Connect("<<hostname>>", 389);
+        //        // bind with an username and password
+        //        // this how you can verify the password of an user
+
+        //        cn.SecureSocketLayer = true;
+        //        cn.Connect("hqmsdcw01.pomeroy.msft", 636);
+        //        //    string Username = WindowsIdentity.GetCurrent().Name.ToString();
+
+        //        //var CurLoggedUser = User.Identity.IsAuthenticated;
+
+        //        //   string domain = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainNamel;
+
+
+
+        //        try
+        //        {
+        //            cn.Bind(userr.Email, userr.Password);
+        //            //checking in Credential Alternate Table
+        //            DboCredentialAlternate userCred = _context.DboCredentialAlternate.SingleOrDefault(m => m.Vchr64UserName == userr.Email);
+        //            if (userCred != null)
+        //            {
+        //                TempData["UserName"] = userr.Email;
+        //                //checking in Credential table
+        //                var userObject = _context.DboCredential.SingleOrDefault(m => m.BintId == userCred.BintPrimaryCredentialId && m.BEnabled == true);
+
+        //                if (userObject != null)
+        //                {
+        //                    return RedirectToAction(nameof(CredentialsController.ManageCredentials), "Credentials", new { actiontype = "ad" });
+        //                }
+                       
+
+        //            }
+                    
+                   
+        //            //if (IsValid(userr.Vchr32Name, userr.Vchr256ModifiedContext) >= 1)
+        //            //{
+        //            //    return RedirectToAction("Index", "Home");
+        //            //}
+        //            //else
+        //            //{
+        //            //Adding record in Credential and Credential Alternate Table
+        //            new BusinessLayer().CreateActiveDirectoryUserCredential(userr);
+
+        //            return RedirectToAction(nameof(CredentialsController.ManageCredentials), "Credentials", new { actiontype = "ad" });
+
+
+
+        //            // }
+
+        //        }
+        //        catch (Exception e)
+        //        {
+        //            ModelState.AddModelError(string.Empty, e.Message);
+        //            ModelState.AddModelError("", "Login details are wrong.");
+        //        }
+        //    }
+
+           
+        //    return View();
+        //}
+
+
+        [NonAction]
+        private int IsValid(string Vchr32Name, string Password)
+        {
+            
+            string sPassword = Password != null ? Password : "";
+            byte[] bytes = Convert.FromBase64String(sPassword);
+
+            //var user = from c in _context.DboCredential where c.Vchr32Name == Vchr32Name && c.Bin64PasswordHash == bytes select new { c.BintId };
+            var user = from c in _context.DboCredential where c.Vchr32Name == Vchr32Name  select new { c.BintId };
+            int icount = user !=null ?user.Count():0;
+            return icount;
+        }
+        //public ActionResult Registration()
+        //{
+        //    return View();
+        //}
+        //[HttpGet]
+        //public ActionResult Registration()
+        //{
+        //    return View();
+        //}
+
+        // [HttpPost]
+        //public ActionResult Registration(Models.RegisterviewModel model)
+        //{
+        //    var url= string.Format("{0}://{1}/{2}{3}", Request.Scheme, Request.Host, "Credentials/ManageCredentials/?email=",model.Email);
+        //    var user = _context.DboCredentialOrganizationInfo.SingleOrDefault(m=>m.Vchr128EMailDomain==Utility.GetUserNameFromEmail(model.Email,true) && m.BAllowEmailAssociation == true && m.BAllowSelfRegistration == true);
+            
+        //    if (user != null)
+        //    {
+        //        new AuthMessageSender().SendEmail(model.Email,"subject","body message <a href="+ url+">click here</a>");
+        //    }
+        //    else
+        //    {
+        //        ViewData["ErrorMessage"] = "You are not a valid user";
+        //    }
+
+
+        //    return View();
+        //}
+       
     }
 }

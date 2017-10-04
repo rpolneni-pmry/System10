@@ -4,17 +4,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Rewrite;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System10.Data;
+using Microsoft.AspNetCore.HttpOverrides;
 using System10.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
 using System10.Services;
-
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace System10
 {
@@ -25,18 +23,15 @@ namespace System10
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddEnvironmentVariables();
 
             if (env.IsDevelopment())
             {
-                // For more details on using the user secret store see http://go.microsoft.com/fwlink/?LinkID=532709
-                builder.AddUserSecrets();
-
                 // This will push telemetry data through Application Insights pipeline faster, allowing you to view results immediately.
                 builder.AddApplicationInsightsSettings(developerMode: true);
             }
-
-            builder.AddEnvironmentVariables();
+          
             Configuration = builder.Build();
         }
 
@@ -45,27 +40,18 @@ namespace System10
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<System10Context>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+               .AddEntityFrameworkStores<System10Context>()
+               .AddDefaultTokenProviders();
             // Add framework services.
             services.AddApplicationInsightsTelemetry(Configuration);
-
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-
-            services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
-
-            services.Configure<IISOptions>(options => options.ForwardWindowsAuthentication = true);
-
-
+            services.AddMemoryCache();
+            services.AddSession();
             services.AddMvc();
 
-            //services.Configure<MvcOptions>(options =>
-            //{
-            //    options.Filters.Add(new RequireHttpsAttribute());
-            //});
-
-            // Add application services.
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
         }
@@ -76,17 +62,19 @@ namespace System10
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-
-            //var options = new RewriteOptions().AddRedirectToHttps();
-
-            //app.UseRewriter(options);
-
             app.UseApplicationInsightsRequestTelemetry();
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor,
 
-          if (env.IsDevelopment())
+                // IIS is also tagging a X-Forwarded-For header on, so we need to increase this limit, 
+                // otherwise the X-Forwarded-For we are passing along from the browser will be ignored
+                ForwardLimit = 2
+            });
+
+            if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
                 app.UseBrowserLink();
             }
             else
@@ -97,20 +85,12 @@ namespace System10
             app.UseApplicationInsightsExceptionTelemetry();
 
             app.UseStaticFiles();
-
             app.UseIdentity();
-
-
-       
-
-            // Add external authentication middleware below. To configure them please see http://go.microsoft.com/fwlink/?LinkID=532715
-
-
             app.UseMicrosoftAccountAuthentication(new MicrosoftAccountOptions()
             {
                 //ClientId = "f700b5c5-c5bf-4492-8f04-788712bcbb02",
                 //ClientSecret= "po3xWk3uTa16ciUZop007B3"
-        
+
                 ClientId = Configuration["Authentication:Microsoft:ApplicationId"],
                 ClientSecret = Configuration["Authentication:Microsoft:Password"]
             });
@@ -125,25 +105,25 @@ namespace System10
                 ConsumerKey = Configuration["Authentication:Twitter:ConsumerKey"],
                 ConsumerSecret = Configuration["Authentication:Twitter:ConsumerSecret"]
             });
-           
+
 
             app.UseLinkedInAuthentication(new LinkedInOptions()
             {
                 ClientId = Configuration["Authentication:LinkedIn:ClientId"],
                 ClientSecret = Configuration["Authentication:LinkedIn:ClientSecret"]
-                
+
             });
             app.UseFacebookAuthentication(new FacebookOptions()
             {
                 AppId = Configuration["Authentication:Facebook:AppId"],
                 AppSecret = Configuration["Authentication:Facebook:AppSecret"]
             });
-
+            app.UseSession();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    template: "{controller=Account}/{action=Index}/{id?}");
             });
         }
     }

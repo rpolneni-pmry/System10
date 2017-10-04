@@ -1,26 +1,24 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
-using System.Security.Principal;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.Extensions.Logging;
-using Novell.Directory.Ldap;
 using System10.Models;
-using System10.Models.AccountViewModels;
+using System.Security.Principal;
+using Microsoft.AspNetCore.Http.Features;
+using Novell.Directory.Ldap;
 using System10.Services;
-
-//using System.DirectoryServices.AccountManagement;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 
 namespace System10.Controllers
 {
-    [Authorize]
     public class AccountController : Controller
     {
+        private readonly System10Context _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IEmailSender _emailSender;
@@ -32,206 +30,194 @@ namespace System10.Controllers
             SignInManager<ApplicationUser> signInManager,
             IEmailSender emailSender,
             ISmsSender smsSender,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory, System10Context context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
             _smsSender = smsSender;
             _logger = loggerFactory.CreateLogger<AccountController>();
+            _context = context;
         }
+        //public AccountController(System10Context context)
+        //{
 
-        //
-        // GET: /Account/Login
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult Login(string returnUrl = null)
+        //    _context = context;
+    
+        //}
+        private void SetSessionUserName(string name)
         {
-            ViewData["ReturnUrl"] = returnUrl;
-            return View();
+            HttpContext.Session.SetString("lUserName", name);
         }
-
-        //
-        // POST: /Account/Login
-        [HttpPost]
-        [AllowAnonymous]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
+        public IActionResult Index()
         {
-            ViewData["ReturnUrl"] = returnUrl;
-            if (ModelState.IsValid)
+            var logusr = User.Identity.Name;
+
+            var loggedInUser = HttpContext.User.Identity as WindowsIdentity;
+            
+           
+            if (loggedInUser?.User?.AccountDomainSid?.Value == "S-1-5-21-2610387755-854405893-26240035430")
             {
-                // This doesn't count login failures towards account lockout
-                // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
-
-
-                //     var authType = Request.HttpContext.Authentication;
-
-
-                //using (PrincipalContext pc = new PrincipalContext(ContextType.Domain, "YOURDOMAIN"))
-                //{
-                //    // validate the credentials
-                //    bool isValid = pc.ValidateCredentials("myuser", "mypassword");
-                //}
-
-
-                //WindowsIdentity loggedInUser = WindowsIdentity.GetCurrent();
-                //if (loggedInUser.User.AccountDomainSid.Value == "S-1-5-21-2610387755-854405893-2624003543")
-                //{
-
-                //    var winLoginNameTrim = loggedInUser.Name.Split('\\');
-                //    var winLoginName = winLoginNameTrim.Last();
-
-                //    var user = new ApplicationUser { UserName = winLoginName, Email = winLoginName };
-
-                //    var userC = await _userManager.CreateAsync(user);
-                //    if (userC.Succeeded)
-                //    {
-                //        var results = await _userManager.AddLoginAsync(user, new UserLoginInfo("", "", "disply"));
-                //    }
-                //    await _signInManager.SignInAsync(user, isPersistent: false);
-                //    return RedirectToLocal(returnUrl);
-
-                //}
-
-
-
-                using (var cn = new LdapConnection())
+                // DboCredentialAlternate userCred = _context.DboCredentialAlternate.SingleOrDefault(m => m.Vchr64UserName == GetLoggedInUser(loggedInUser));
+               
+                var winLoginNameTrim = loggedInUser.Name.Split('\\');
+                var winLoginName = winLoginNameTrim.Last();
+                TempData["UserName"] = winLoginName;
+                SetSessionUserName(winLoginName);
+                //checking in CredentialAlternate table 
+                 DboCredentialAlternate userCred = _context.DboCredentialAlternate.SingleOrDefault(m => m.Vchr64UserName == winLoginName);
+               
+                if (userCred != null)
                 {
-                    // connect
-                    //   cn.Connect("<<hostname>>", 389);
-                    // bind with an username and password
-                    // this how you can verify the password of an user
+                    //Checking in credential table 
+                    var userObject = _context.DboCredential.SingleOrDefault(m => m.BintId == userCred.BintPrimaryCredentialId && m.BEnabled == true);
 
-                    cn.SecureSocketLayer = true;
-                    cn.Connect("hqmsdcw01.pomeroy.msft", 636);
-                    //    string Username = WindowsIdentity.GetCurrent().Name.ToString();
-
-                    //var CurLoggedUser = User.Identity.IsAuthenticated;
-
-                    //   string domain = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainNamel;
-
-
-
-                    try
+                    if (userObject != null)
                     {
-                        cn.Bind(model.Email, model.Password);
-                        _logger.LogInformation(1, "User logged in.");
-                        var modelEmail = model.Email.Split('\\');
-                        var userName = modelEmail.Last();
-                        var user = new ApplicationUser { UserName = userName, Email = userName };
-                        var userC = await _userManager.CreateAsync(user);
-                        if (userC.Succeeded)
-                        {
-                            var results = await _userManager.AddLoginAsync(user, new UserLoginInfo("WindowsADuser", "", userName));
-                        }
-                        await _signInManager.SignInAsync(user, isPersistent: false);
-                        return RedirectToLocal(returnUrl);
-                    }
-                    catch (Exception e)
-                    {
-                        ModelState.AddModelError(string.Empty, e.Message);
-                        return View(model);
+
+                        return RedirectToAction(nameof(CredentialsController.ManageCredentials), "Credentials", new { debug = "" });
                     }
 
-
-
-                    //LdapAttribute attr = new LdapAttribute("userPassword", testPassword);
-
-                    //    bool correct = cn.Compare(objectDN, attr);
-
-
-                    // call ldap op
-                    // cn.Delete("<<userdn>>")
-                    // cn.Add(<<ldapEntryInstance>>)
                 }
 
+                new BusinessLayer(_context).CreateWindowsUserCredential(winLoginName);
 
-                if (result.Succeeded)
+                return RedirectToAction(nameof(CredentialsController.ManageCredentials), "Credentials", new { debug = "" });
+
+
+            }
+            else
+            {
+                //getting IP address and checking against CredentialOrganizationInfo table
+                var remoteIpAddress = HttpContext.Features.Get<IHttpConnectionFeature>()?.RemoteIpAddress.ToString();
+
+                var creOrg = _context.DboCredentialOrganizationInfo.SingleOrDefault(m => m.Vchr40Ip == remoteIpAddress && m.BAllowIpsignon == true);
+                if (creOrg != null)
                 {
-                    _logger.LogInformation(1, "User logged in.");
-                    return RedirectToLocal(returnUrl);
-                }
-                if (result.RequiresTwoFactor)
-                {
-                    return RedirectToAction(nameof(SendCode), new { ReturnUrl = returnUrl, RememberMe = model.RememberMe });
-                }
-                if (result.IsLockedOut)
-                {
-                    _logger.LogWarning(2, "User account locked out.");
-                    return View("Lockout");
+                    //Checking in Credential table 
+                    var userObject = _context.DboCredential.SingleOrDefault(m => m.BintId == creOrg.BintCredentialId && m.BEnabled == true);
+                    if (userObject != null)
+                    {
+                        TempData["UserName"] = userObject.Vchr32Name;
+                        HttpContext.Session.SetString("lUserName", userObject.Vchr32Name);
+                        return RedirectToAction(nameof(CredentialsController.ManageCredentials), "Credentials", new { debug = "" });
+                    }
+                    else
+                    {
+                        return RedirectToAction(nameof(HomeController.Error), "Home", new { debug = "" });
+                    }
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-                    return View(model);
+                    return RedirectToAction(nameof(AccountController.Login), "Account", new { debug = "" });
+                }
+
+            }
+            
+        }
+
+        private static WindowsIdentity GetLoggedInUser(WindowsIdentity loggedInUser)
+        {
+            return loggedInUser;
+        }
+
+        public IActionResult Login()
+        {
+            return View();
+        }
+        [HttpPost]
+        //Active directory users login
+        public IActionResult Login(Models.LoginViewModel userr, string ReturnUrl)
+        {
+            //Authenticating using Active Directory
+            using (var cn = new LdapConnection())
+            {
+                // connect
+                //   cn.Connect("<<hostname>>", 389);
+                // bind with an username and password
+                // this how you can verify the password of an user
+
+                cn.SecureSocketLayer = true;
+                cn.Connect("hqmsdcw01.pomeroy.msft", 636);
+                //    string Username = WindowsIdentity.GetCurrent().Name.ToString();
+
+                //var CurLoggedUser = User.Identity.IsAuthenticated;
+
+                //   string domain = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainNamel;
+
+
+
+                try
+                {
+                    cn.Bind(userr.Email, userr.Password);
+                    //checking in Credential Alternate Table
+                    DboCredentialAlternate userCred = _context.DboCredentialAlternate.SingleOrDefault(m => m.Vchr64UserName == userr.Email);
+                    if (userCred != null)
+                    {
+                        TempData["UserName"] = userr.Email;
+                        HttpContext.Session.SetString("lUserName", userr.Email);
+                        //checking in Credential table
+                        var userObject = _context.DboCredential.SingleOrDefault(m => m.BintId == userCred.BintPrimaryCredentialId && m.BEnabled == true);
+
+                        if (userObject != null)
+                        {
+                            return RedirectToAction(nameof(CredentialsController.ManageCredentials), "Credentials", new { actiontype = "ad" });
+                        }
+                    }
+                        new BusinessLayer(_context).CreateActiveDirectoryUserCredential(userr);
+
+                    return RedirectToAction(nameof(CredentialsController.ManageCredentials), "Credentials", new { actiontype = "ad" });
+
+
+                }
+                catch (Exception e)
+                {
+                    var isUseExists= new BusinessLayer(_context).ValidateUser(Utility.GetUserNameFromEmail(userr.Email), userr.Password);
+                    if(isUseExists > 0)
+                    {
+                        HttpContext.Session.SetString("lUserName", userr.Email);
+                        return RedirectToAction(nameof(HomeController.Index), "Home", new { debug = "" });
+                    }
+                    ViewData["ErrorMessage"] = "Please provide valid user name and password";
                 }
             }
 
-            // If we got this far, something failed, redisplay form
-            return View(model);
-        }
 
-
-
-
-
-
-        //
-        // GET: /Account/Register
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult Register(string returnUrl = null)
-        {
-            ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
 
-        //
-        // POST: /Account/Register
-        [HttpPost]
-        [AllowAnonymous]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(RegisterViewModel model, string returnUrl = null)
+        [HttpGet]
+        public ActionResult Registration()
         {
-            ViewData["ReturnUrl"] = returnUrl;
-            if (ModelState.IsValid)
-            {
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
-                var result = await _userManager.CreateAsync(user, model.Password);
-                if (result.Succeeded)
-                {
-                    // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
-                    // Send an email with this link
-                    //var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    //var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
-                    //await _emailSender.SendEmailAsync(model.Email, "Confirm your account",
-                    //    $"Please confirm your account by clicking this link: <a href='{callbackUrl}'>link</a>");
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    _logger.LogInformation(3, "User created a new account with password.");
-                    return RedirectToLocal(returnUrl);
-                }
-                AddErrors(result);
-            }
-
-            // If we got this far, something failed, redisplay form
-            return View(model);
+            return View();
         }
 
-        //
-        // POST: /Account/LogOff
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> LogOff()
+        public ActionResult Registration(Models.RegisterviewModel model)
         {
+            var url = string.Format("{0}://{1}/{2}{3}", Request.Scheme, Request.Host, "Credentials/ManageCredentials/?email=", model.Email);
+            var user = _context.DboCredentialOrganizationInfo.SingleOrDefault(m => m.Vchr128EMailDomain == Utility.GetUserNameFromEmail(model.Email, true) && m.BAllowEmailAssociation == true && m.BAllowSelfRegistration == true);
+
+            if (user != null)
+            {
+                new AuthMessageSender().SendEmail(model.Email, "subject", "body message <a href=" + url + ">click here</a>");
+            }
+            else
+            {
+                ViewData["ErrorMessage"] = "You are not a valid user";
+            }
+            return View();
+        }
+
+        public async Task<IActionResult> LogOut()
+        {
+            HttpContext.Session.SetString("lUserName", string.Empty);
             await _signInManager.SignOutAsync();
             _logger.LogInformation(4, "User logged out.");
-            return RedirectToAction(nameof(HomeController.About), "Home");
+            return RedirectToAction(nameof(HomeController.Index), "Home");
+           // return RedirectToAction(nameof(AccountController.Index), "Account", new { debug = "" });
         }
 
-        //
-        // POST: /Account/ExternalLogin
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -242,7 +228,17 @@ namespace System10.Controllers
             var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
             return Challenge(properties, provider);
         }
-
+        private IActionResult RedirectToLocal(string returnUrl)
+        {
+            if (Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+            else
+            {
+                return RedirectToAction(nameof(HomeController.Index), "Home");
+            }
+        }
         //
         // GET: /Account/ExternalLoginCallback
         [HttpGet]
@@ -261,26 +257,38 @@ namespace System10.Controllers
             }
 
             // Sign in the user with this external login provider if the user already has a login.
-            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
-            if (result.Succeeded)
-            {
-                _logger.LogInformation(5, "User logged in with {Name} provider.", info.LoginProvider);
-                return RedirectToLocal(returnUrl);
-            }
-            if (result.RequiresTwoFactor)
-            {
-                return RedirectToAction(nameof(SendCode), new { ReturnUrl = returnUrl });
-            }
-            if (result.IsLockedOut)
-            {
-                return View("Lockout");
-            }
+            //var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
+            //if (result.Succeeded)
+            //{
+            //    _logger.LogInformation(5, "User logged in with {Name} provider.", info.LoginProvider);
+            //    return RedirectToLocal(returnUrl);
+            //}
+            //if (result.RequiresTwoFactor)
+            //{
+            //    return RedirectToAction(nameof(SendCode), new { ReturnUrl = returnUrl });
+            //}
+            //if (result.IsLockedOut)
+            //{
+            //    return View("Lockout");
+            //}
             else
             {
                 // If the user does not have an account, then ask the user to create an account.
                 ViewData["ReturnUrl"] = returnUrl;
                 ViewData["LoginProvider"] = info.LoginProvider;
                 var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+                var dbAltObj = _context.DboCredentialAlternate.SingleOrDefault(m => m.Vchr64UserName == email.Trim());
+                if(dbAltObj != null)
+                {
+                    var dbCrObj = _context.DboCredential.SingleOrDefault(m => m.BintId == dbAltObj.BintPrimaryCredentialId && m.BEnabled==true);
+                    if(dbCrObj != null)
+                    {
+                        SetSessionUserName(dbCrObj.Vchr32Name);
+                        return RedirectToAction(nameof(HomeController.Index), "Home", new { debug = "" });
+
+                    }
+                }
+                
                 return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = email });
             }
         }
@@ -312,7 +320,7 @@ namespace System10.Controllers
                         return RedirectToLocal(returnUrl);
                     }
                 }
-                AddErrors(result);
+                //AddErrors(result);
             }
 
             ViewData["ReturnUrl"] = returnUrl;
@@ -337,225 +345,6 @@ namespace System10.Controllers
             return View(result.Succeeded ? "ConfirmEmail" : "Error");
         }
 
-        //
-        // GET: /Account/ForgotPassword
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult ForgotPassword()
-        {
-            return View();
-        }
 
-        //
-        // POST: /Account/ForgotPassword
-        [HttpPost]
-        [AllowAnonymous]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                var user = await _userManager.FindByNameAsync(model.Email);
-                if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
-                {
-                    // Don't reveal that the user does not exist or is not confirmed
-                    return View("ForgotPasswordConfirmation");
-                }
-
-                // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
-                // Send an email with this link
-                //var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-                //var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
-                //await _emailSender.SendEmailAsync(model.Email, "Reset Password",
-                //   $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
-                //return View("ForgotPasswordConfirmation");
-            }
-
-            // If we got this far, something failed, redisplay form
-            return View(model);
-        }
-
-        //
-        // GET: /Account/ForgotPasswordConfirmation
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult ForgotPasswordConfirmation()
-        {
-            return View();
-        }
-
-        //
-        // GET: /Account/ResetPassword
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult ResetPassword(string code = null)
-        {
-            return code == null ? View("Error") : View();
-        }
-
-        //
-        // POST: /Account/ResetPassword
-        [HttpPost]
-        [AllowAnonymous]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-            var user = await _userManager.FindByNameAsync(model.Email);
-            if (user == null)
-            {
-                // Don't reveal that the user does not exist
-                return RedirectToAction(nameof(AccountController.ResetPasswordConfirmation), "Account");
-            }
-            var result = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
-            if (result.Succeeded)
-            {
-                return RedirectToAction(nameof(AccountController.ResetPasswordConfirmation), "Account");
-            }
-            AddErrors(result);
-            return View();
-        }
-
-        //
-        // GET: /Account/ResetPasswordConfirmation
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult ResetPasswordConfirmation()
-        {
-            return View();
-        }
-
-        //
-        // GET: /Account/SendCode
-        [HttpGet]
-        [AllowAnonymous]
-        public async Task<ActionResult> SendCode(string returnUrl = null, bool rememberMe = false)
-        {
-            var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
-            if (user == null)
-            {
-                return View("Error");
-            }
-            var userFactors = await _userManager.GetValidTwoFactorProvidersAsync(user);
-            var factorOptions = userFactors.Select(purpose => new SelectListItem { Text = purpose, Value = purpose }).ToList();
-            return View(new SendCodeViewModel { Providers = factorOptions, ReturnUrl = returnUrl, RememberMe = rememberMe });
-        }
-
-        //
-        // POST: /Account/SendCode
-        [HttpPost]
-        [AllowAnonymous]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SendCode(SendCodeViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View();
-            }
-
-            var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
-            if (user == null)
-            {
-                return View("Error");
-            }
-
-            // Generate the token and send it
-            var code = await _userManager.GenerateTwoFactorTokenAsync(user, model.SelectedProvider);
-            if (string.IsNullOrWhiteSpace(code))
-            {
-                return View("Error");
-            }
-
-            var message = "Your security code is: " + code;
-            if (model.SelectedProvider == "Email")
-            {
-                await _emailSender.SendEmailAsync(await _userManager.GetEmailAsync(user), "Security Code", message);
-            }
-            else if (model.SelectedProvider == "Phone")
-            {
-                await _smsSender.SendSmsAsync(await _userManager.GetPhoneNumberAsync(user), message);
-            }
-
-            return RedirectToAction(nameof(VerifyCode), new { Provider = model.SelectedProvider, ReturnUrl = model.ReturnUrl, RememberMe = model.RememberMe });
-        }
-
-        //
-        // GET: /Account/VerifyCode
-        [HttpGet]
-        [AllowAnonymous]
-        public async Task<IActionResult> VerifyCode(string provider, bool rememberMe, string returnUrl = null)
-        {
-            // Require that the user has already logged in via username/password or external login
-            var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
-            if (user == null)
-            {
-                return View("Error");
-            }
-            return View(new VerifyCodeViewModel { Provider = provider, ReturnUrl = returnUrl, RememberMe = rememberMe });
-        }
-
-        //
-        // POST: /Account/VerifyCode
-        [HttpPost]
-        [AllowAnonymous]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> VerifyCode(VerifyCodeViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
-            // The following code protects for brute force attacks against the two factor codes.
-            // If a user enters incorrect codes for a specified amount of time then the user account
-            // will be locked out for a specified amount of time.
-            var result = await _signInManager.TwoFactorSignInAsync(model.Provider, model.Code, model.RememberMe, model.RememberBrowser);
-            if (result.Succeeded)
-            {
-                return RedirectToLocal(model.ReturnUrl);
-            }
-            if (result.IsLockedOut)
-            {
-                _logger.LogWarning(7, "User account locked out.");
-                return View("Lockout");
-            }
-            else
-            {
-                ModelState.AddModelError(string.Empty, "Invalid code.");
-                return View(model);
-            }
-        }
-
-        #region Helpers
-
-        private void AddErrors(IdentityResult result)
-        {
-            foreach (var error in result.Errors)
-            {
-                ModelState.AddModelError(string.Empty, error.Description);
-            }
-        }
-
-        private Task<ApplicationUser> GetCurrentUserAsync()
-        {
-            return _userManager.GetUserAsync(HttpContext.User);
-        }
-
-        private IActionResult RedirectToLocal(string returnUrl)
-        {
-            if (Url.IsLocalUrl(returnUrl))
-            {
-                return Redirect(returnUrl);
-            }
-            else
-            {
-                return RedirectToAction(nameof(HomeController.Index), "Home");
-            }
-        }
-
-        #endregion
     }
 }

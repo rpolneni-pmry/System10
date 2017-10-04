@@ -3,7 +3,6 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title>@ViewData["Title"] - System10</title>
 
     <environment names="Development">
@@ -17,6 +16,8 @@
         <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
     </environment>
     @Html.ApplicationInsightsJavaScript(TelemetryConfiguration)
+    @using Microsoft.AspNetCore.Http
+    @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 </head>
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -32,11 +33,23 @@
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li style="display:none"><a asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li><a asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
                     <li><a asp-area="" asp-controller="Home" asp-action="About">About</a></li>
                     <li><a asp-area="" asp-controller="Home" asp-action="Contact">Contact</a></li>
+                    @if (HttpContextAccessor.HttpContext.Session.GetString("lUserName") != string.Empty)
+                    {
+                        <li><a asp-area="" asp-controller="Account" asp-action="Logout">Logout</a></li>
+                        <li><a asp-area="" asp-controller="Manage" asp-action="Index" title="Manage">Hello @HttpContextAccessor.HttpContext.Session.GetString("lUserName")</a></li>
+                    }
+                    else
+                    {
+                        <li><a asp-area="" asp-controller="Account" asp-action="Login">Login</a></li>
+
+                    }
+
+                    
+                    
                 </ul>
-                @await Html.PartialAsync("_LoginPartial")
             </div>
         </div>
     </div>
