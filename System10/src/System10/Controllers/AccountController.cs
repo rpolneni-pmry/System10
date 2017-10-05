@@ -52,11 +52,12 @@ namespace System10.Controllers
         public IActionResult Index()
         {
             var logusr = User.Identity.Name;
+            //string logusr = User.Identity.Name;
 
             var loggedInUser = HttpContext.User.Identity as WindowsIdentity;
             
            
-            if (loggedInUser?.User?.AccountDomainSid?.Value == "S-1-5-21-2610387755-854405893-26240035430")
+            if (loggedInUser?.User?.AccountDomainSid?.Value == "S-1-5-21-2610387755-854405893-2624003543")
             {
                 // DboCredentialAlternate userCred = _context.DboCredentialAlternate.SingleOrDefault(m => m.Vchr64UserName == GetLoggedInUser(loggedInUser));
                

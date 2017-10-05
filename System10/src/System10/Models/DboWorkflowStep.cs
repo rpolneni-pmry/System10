@@ -8,6 +8,7 @@ namespace System10.Models
         public DboWorkflowStep()
         {
             DboWorkflowInstance = new HashSet<DboWorkflowInstance>();
+            DboWorkflowStepAction = new HashSet<DboWorkflowStepAction>();
             DboWorkflowStepFieldConfiguration = new HashSet<DboWorkflowStepFieldConfiguration>();
         }
 
@@ -39,6 +40,7 @@ namespace System10.Models
         public bool BSmokeTest { get; set; }
 
         public virtual ICollection<DboWorkflowInstance> DboWorkflowInstance { get; set; }
+        public virtual ICollection<DboWorkflowStepAction> DboWorkflowStepAction { get; set; }
         public virtual ICollection<DboWorkflowStepFieldConfiguration> DboWorkflowStepFieldConfiguration { get; set; }
         public virtual DboAction BintAction1 { get; set; }
         public virtual DboAction BintAction2 { get; set; }

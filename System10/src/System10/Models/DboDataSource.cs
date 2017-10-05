@@ -13,6 +13,7 @@ namespace System10.Models
         }
 
         public long BintId { get; set; }
+        public int IDataSourceTypeId { get; set; }
         public string Nvch128Caption { get; set; }
         public long? BintOriginId { get; set; }
         public int IParameterBasisId { get; set; }
@@ -44,6 +45,7 @@ namespace System10.Models
         public virtual DboCredential BintModifierSpoofOfCredential { get; set; }
         public virtual DboDataSource BintOrigin { get; set; }
         public virtual ICollection<DboDataSource> InverseBintOrigin { get; set; }
+        public virtual LkpDataSourceType IDataSourceType { get; set; }
         public virtual LkpParameterBasis IParameterBasis { get; set; }
     }
 }

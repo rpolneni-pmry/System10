@@ -51,7 +51,7 @@ namespace System10.Services
             //Smtp Port Number  
             int SmtpPortNumber = 587;
 
-            var mimeMessage = new MimeMessage();
+            MimeMessage mimeMessage = new MimeMessage();
             mimeMessage.From.Add(new MailboxAddress(FromAdressTitle, FromAddress));
             mimeMessage.To.Add(new MailboxAddress(ToAdressTitle, ToAddress));
             mimeMessage.Subject = Subject;

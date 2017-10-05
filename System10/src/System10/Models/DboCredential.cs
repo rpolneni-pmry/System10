@@ -60,6 +60,8 @@ namespace System10.Models
             DboEmailServerBintCreatorSpoofOfCredential = new HashSet<DboEmailServer>();
             DboEmailServerBintModifierCredential = new HashSet<DboEmailServer>();
             DboEmailServerBintModifierSpoofOfCredential = new HashSet<DboEmailServer>();
+            DboExecutionLogBintCredential = new HashSet<DboExecutionLog>();
+            DboExecutionLogBintSpoofOfCredential = new HashSet<DboExecutionLog>();
             DboFormBintCreatorCredential = new HashSet<DboForm>();
             DboFormBintCreatorSpoofOfCredential = new HashSet<DboForm>();
             DboFormBintModifierCredential = new HashSet<DboForm>();
@@ -85,8 +87,6 @@ namespace System10.Models
             DboModuleWorkflowBintCreatorSpoofOfCredential = new HashSet<DboModuleWorkflow>();
             DboModuleWorkflowBintModifierCredential = new HashSet<DboModuleWorkflow>();
             DboModuleWorkflowBintModifierSpoofOfCredential = new HashSet<DboModuleWorkflow>();
-            DboPermissionLogBintCredential = new HashSet<DboPermissionLog>();
-            DboPermissionLogBintSpoofOfCredential = new HashSet<DboPermissionLog>();
             DboPushNotificationBintCreatorCredential = new HashSet<DboPushNotification>();
             DboPushNotificationBintCreatorSpoofOfCredential = new HashSet<DboPushNotification>();
             DboPushNotificationBintModifierCredential = new HashSet<DboPushNotification>();
@@ -136,6 +136,10 @@ namespace System10.Models
             DboWorkflowStepBintCreatorSpoofOfCredential = new HashSet<DboWorkflowStep>();
             DboWorkflowStepBintModifierCredential = new HashSet<DboWorkflowStep>();
             DboWorkflowStepBintModifierSpoofOfCredential = new HashSet<DboWorkflowStep>();
+            DboWorkflowStepActionBintCreatorCredential = new HashSet<DboWorkflowStepAction>();
+            DboWorkflowStepActionBintCreatorSpoofOfCredential = new HashSet<DboWorkflowStepAction>();
+            DboWorkflowStepActionBintModifierCredential = new HashSet<DboWorkflowStepAction>();
+            DboWorkflowStepActionBintModifierSpoofOfCredential = new HashSet<DboWorkflowStepAction>();
             DboWorkflowStepFieldConfigurationBintCreatorCredential = new HashSet<DboWorkflowStepFieldConfiguration>();
             DboWorkflowStepFieldConfigurationBintCreatorSpoofOfCredential = new HashSet<DboWorkflowStepFieldConfiguration>();
             DboWorkflowStepFieldConfigurationBintCredential = new HashSet<DboWorkflowStepFieldConfiguration>();
@@ -153,6 +157,10 @@ namespace System10.Models
             LkpCredentialTypeBintCreatorSpoofOfCredential = new HashSet<LkpCredentialType>();
             LkpCredentialTypeBintModifierCredential = new HashSet<LkpCredentialType>();
             LkpCredentialTypeBintModifierSpoofOfCredential = new HashSet<LkpCredentialType>();
+            LkpDataSourceTypeBintCreatorCredential = new HashSet<LkpDataSourceType>();
+            LkpDataSourceTypeBintCreatorSpoofOfCredential = new HashSet<LkpDataSourceType>();
+            LkpDataSourceTypeBintModifierCredential = new HashSet<LkpDataSourceType>();
+            LkpDataSourceTypeBintModifierSpoofOfCredential = new HashSet<LkpDataSourceType>();
             LkpDynamicDataEndpointBintCreatorCredential = new HashSet<LkpDynamicDataEndpoint>();
             LkpDynamicDataEndpointBintCreatorSpoofOfCredential = new HashSet<LkpDynamicDataEndpoint>();
             LkpDynamicDataEndpointBintModifierCredential = new HashSet<LkpDynamicDataEndpoint>();
@@ -229,6 +237,10 @@ namespace System10.Models
             LkpReExecuteOnNextBintCreatorSpoofOfCredential = new HashSet<LkpReExecuteOnNext>();
             LkpReExecuteOnNextBintModifierCredential = new HashSet<LkpReExecuteOnNext>();
             LkpReExecuteOnNextBintModifierSpoofOfCredential = new HashSet<LkpReExecuteOnNext>();
+            LkpScheduleBasisBintCreatorCredential = new HashSet<LkpScheduleBasis>();
+            LkpScheduleBasisBintCreatorSpoofOfCredential = new HashSet<LkpScheduleBasis>();
+            LkpScheduleBasisBintModifierCredential = new HashSet<LkpScheduleBasis>();
+            LkpScheduleBasisBintModifierSpoofOfCredential = new HashSet<LkpScheduleBasis>();
             LkpSocialConversationScopeBintCreatorCredential = new HashSet<LkpSocialConversationScope>();
             LkpSocialConversationScopeBintCreatorSpoofOfCredential = new HashSet<LkpSocialConversationScope>();
             LkpSocialConversationScopeBintModifierCredential = new HashSet<LkpSocialConversationScope>();
@@ -328,6 +340,8 @@ namespace System10.Models
         public virtual ICollection<DboEmailServer> DboEmailServerBintCreatorSpoofOfCredential { get; set; }
         public virtual ICollection<DboEmailServer> DboEmailServerBintModifierCredential { get; set; }
         public virtual ICollection<DboEmailServer> DboEmailServerBintModifierSpoofOfCredential { get; set; }
+        public virtual ICollection<DboExecutionLog> DboExecutionLogBintCredential { get; set; }
+        public virtual ICollection<DboExecutionLog> DboExecutionLogBintSpoofOfCredential { get; set; }
         public virtual ICollection<DboForm> DboFormBintCreatorCredential { get; set; }
         public virtual ICollection<DboForm> DboFormBintCreatorSpoofOfCredential { get; set; }
         public virtual ICollection<DboForm> DboFormBintModifierCredential { get; set; }
@@ -353,8 +367,6 @@ namespace System10.Models
         public virtual ICollection<DboModuleWorkflow> DboModuleWorkflowBintCreatorSpoofOfCredential { get; set; }
         public virtual ICollection<DboModuleWorkflow> DboModuleWorkflowBintModifierCredential { get; set; }
         public virtual ICollection<DboModuleWorkflow> DboModuleWorkflowBintModifierSpoofOfCredential { get; set; }
-        public virtual ICollection<DboPermissionLog> DboPermissionLogBintCredential { get; set; }
-        public virtual ICollection<DboPermissionLog> DboPermissionLogBintSpoofOfCredential { get; set; }
         public virtual ICollection<DboPushNotification> DboPushNotificationBintCreatorCredential { get; set; }
         public virtual ICollection<DboPushNotification> DboPushNotificationBintCreatorSpoofOfCredential { get; set; }
         public virtual ICollection<DboPushNotification> DboPushNotificationBintModifierCredential { get; set; }
@@ -404,6 +416,10 @@ namespace System10.Models
         public virtual ICollection<DboWorkflowStep> DboWorkflowStepBintCreatorSpoofOfCredential { get; set; }
         public virtual ICollection<DboWorkflowStep> DboWorkflowStepBintModifierCredential { get; set; }
         public virtual ICollection<DboWorkflowStep> DboWorkflowStepBintModifierSpoofOfCredential { get; set; }
+        public virtual ICollection<DboWorkflowStepAction> DboWorkflowStepActionBintCreatorCredential { get; set; }
+        public virtual ICollection<DboWorkflowStepAction> DboWorkflowStepActionBintCreatorSpoofOfCredential { get; set; }
+        public virtual ICollection<DboWorkflowStepAction> DboWorkflowStepActionBintModifierCredential { get; set; }
+        public virtual ICollection<DboWorkflowStepAction> DboWorkflowStepActionBintModifierSpoofOfCredential { get; set; }
         public virtual ICollection<DboWorkflowStepFieldConfiguration> DboWorkflowStepFieldConfigurationBintCreatorCredential { get; set; }
         public virtual ICollection<DboWorkflowStepFieldConfiguration> DboWorkflowStepFieldConfigurationBintCreatorSpoofOfCredential { get; set; }
         public virtual ICollection<DboWorkflowStepFieldConfiguration> DboWorkflowStepFieldConfigurationBintCredential { get; set; }
@@ -421,6 +437,10 @@ namespace System10.Models
         public virtual ICollection<LkpCredentialType> LkpCredentialTypeBintCreatorSpoofOfCredential { get; set; }
         public virtual ICollection<LkpCredentialType> LkpCredentialTypeBintModifierCredential { get; set; }
         public virtual ICollection<LkpCredentialType> LkpCredentialTypeBintModifierSpoofOfCredential { get; set; }
+        public virtual ICollection<LkpDataSourceType> LkpDataSourceTypeBintCreatorCredential { get; set; }
+        public virtual ICollection<LkpDataSourceType> LkpDataSourceTypeBintCreatorSpoofOfCredential { get; set; }
+        public virtual ICollection<LkpDataSourceType> LkpDataSourceTypeBintModifierCredential { get; set; }
+        public virtual ICollection<LkpDataSourceType> LkpDataSourceTypeBintModifierSpoofOfCredential { get; set; }
         public virtual ICollection<LkpDynamicDataEndpoint> LkpDynamicDataEndpointBintCreatorCredential { get; set; }
         public virtual ICollection<LkpDynamicDataEndpoint> LkpDynamicDataEndpointBintCreatorSpoofOfCredential { get; set; }
         public virtual ICollection<LkpDynamicDataEndpoint> LkpDynamicDataEndpointBintModifierCredential { get; set; }
@@ -497,6 +517,10 @@ namespace System10.Models
         public virtual ICollection<LkpReExecuteOnNext> LkpReExecuteOnNextBintCreatorSpoofOfCredential { get; set; }
         public virtual ICollection<LkpReExecuteOnNext> LkpReExecuteOnNextBintModifierCredential { get; set; }
         public virtual ICollection<LkpReExecuteOnNext> LkpReExecuteOnNextBintModifierSpoofOfCredential { get; set; }
+        public virtual ICollection<LkpScheduleBasis> LkpScheduleBasisBintCreatorCredential { get; set; }
+        public virtual ICollection<LkpScheduleBasis> LkpScheduleBasisBintCreatorSpoofOfCredential { get; set; }
+        public virtual ICollection<LkpScheduleBasis> LkpScheduleBasisBintModifierCredential { get; set; }
+        public virtual ICollection<LkpScheduleBasis> LkpScheduleBasisBintModifierSpoofOfCredential { get; set; }
         public virtual ICollection<LkpSocialConversationScope> LkpSocialConversationScopeBintCreatorCredential { get; set; }
         public virtual ICollection<LkpSocialConversationScope> LkpSocialConversationScopeBintCreatorSpoofOfCredential { get; set; }
         public virtual ICollection<LkpSocialConversationScope> LkpSocialConversationScopeBintModifierCredential { get; set; }

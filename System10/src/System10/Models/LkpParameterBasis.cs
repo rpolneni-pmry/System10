@@ -10,6 +10,7 @@ namespace System10.Models
             DboAction = new HashSet<DboAction>();
             DboDataSource = new HashSet<DboDataSource>();
             DboFormAction = new HashSet<DboFormAction>();
+            DboWorkflowStepAction = new HashSet<DboWorkflowStepAction>();
         }
 
         public int IId { get; set; }
@@ -26,6 +27,7 @@ namespace System10.Models
         public virtual ICollection<DboAction> DboAction { get; set; }
         public virtual ICollection<DboDataSource> DboDataSource { get; set; }
         public virtual ICollection<DboFormAction> DboFormAction { get; set; }
+        public virtual ICollection<DboWorkflowStepAction> DboWorkflowStepAction { get; set; }
         public virtual DboCredential BintCreatorCredential { get; set; }
         public virtual DboCredential BintCreatorSpoofOfCredential { get; set; }
         public virtual DboCredential BintModifierCredential { get; set; }

@@ -655,9 +655,17 @@ namespace System10.Models
                     .HasColumnName("b_AllowIPSignon")
                     .HasDefaultValueSql("0");
 
+                entity.Property(e => e.BAllowLdapauthentication)
+                    .HasColumnName("b_AllowLDAPAuthentication")
+                    .HasDefaultValueSql("0");
+
                 entity.Property(e => e.BAllowSelfRegistration)
                     .HasColumnName("b_AllowSelfRegistration")
                     .HasDefaultValueSql("0");
+
+                entity.Property(e => e.BLdapviaSsl)
+                    .HasColumnName("b_LDAPViaSSL")
+                    .HasDefaultValueSql("1");
 
                 entity.Property(e => e.BSmokeTest).HasColumnName("b_SmokeTest");
 
@@ -687,6 +695,8 @@ namespace System10.Models
 
                 entity.Property(e => e.IConfirmationValidationUnitId).HasColumnName("i_ConfirmationValidationUnitID");
 
+                entity.Property(e => e.ILdapportNumber).HasColumnName("i_LDAPPortNumber");
+
                 entity.Property(e => e.IPasswordResetComparisonId).HasColumnName("i_PasswordResetComparisonID");
 
                 entity.Property(e => e.IPasswordResetCount).HasColumnName("i_PasswordResetCount");
@@ -712,6 +722,10 @@ namespace System10.Models
                     .IsRequired()
                     .HasColumnName("vchr_40_IP")
                     .HasColumnType("varchar(40)");
+
+                entity.Property(e => e.Vchr64LdaphostName)
+                    .HasColumnName("vchr_64_LDAPHostName")
+                    .HasColumnType("varchar(64)");
 
                 entity.HasOne(d => d.BintCreatorCredential)
                     .WithMany(p => p.DboCredentialOrganizationInfoBintCreatorCredential)
@@ -905,6 +919,8 @@ namespace System10.Models
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("getdate()");
 
+                entity.Property(e => e.IDataSourceTypeId).HasColumnName("i_DataSourceTypeID");
+
                 entity.Property(e => e.IParameterBasisId).HasColumnName("i_ParameterBasisID");
 
                 entity.Property(e => e.Nvch128Caption)
@@ -973,6 +989,12 @@ namespace System10.Models
                     .WithMany(p => p.InverseBintOrigin)
                     .HasForeignKey(d => d.BintOriginId)
                     .HasConstraintName("fk_dbo_DataSource_ID_to_dbo_DataSource_OriginID");
+
+                entity.HasOne(d => d.IDataSourceType)
+                    .WithMany(p => p.DboDataSource)
+                    .HasForeignKey(d => d.IDataSourceTypeId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("fk_lkp_DataSourceType_ID_to_dbo_DataSource_DataSourceTypeID");
 
                 entity.HasOne(d => d.IParameterBasis)
                     .WithMany(p => p.DboDataSource)
@@ -1336,6 +1358,48 @@ namespace System10.Models
                     .HasConstraintName("fk_lkp_EmailAccountType_ID_to_dbo_EmailServer_EmailAccountTypeID");
             });
 
+            modelBuilder.Entity<DboExecutionLog>(entity =>
+            {
+                entity.HasKey(e => e.BintId)
+                    .HasName("pk_ExecutionLog_bint_ID");
+
+                entity.ToTable("dbo_ExecutionLog");
+
+                entity.Property(e => e.BintId).HasColumnName("bint_ID");
+
+                entity.Property(e => e.BSmokeTest).HasColumnName("b_SmokeTest");
+
+                entity.Property(e => e.BintCredentialId).HasColumnName("bint_CredentialID");
+
+                entity.Property(e => e.BintSpoofOfCredentialId).HasColumnName("bint_SpoofOfCredentialID");
+
+                entity.Property(e => e.DtCreated)
+                    .HasColumnName("dt_Created")
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("getdate()");
+
+                entity.Property(e => e.Vchr256Context)
+                    .IsRequired()
+                    .HasColumnName("vchr_256_Context")
+                    .HasColumnType("varchar(256)");
+
+                entity.Property(e => e.Vchr256Executed)
+                    .IsRequired()
+                    .HasColumnName("vchr_256_Executed")
+                    .HasColumnType("varchar(256)");
+
+                entity.HasOne(d => d.BintCredential)
+                    .WithMany(p => p.DboExecutionLogBintCredential)
+                    .HasForeignKey(d => d.BintCredentialId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("fk_dbo_Credential_ID_to_dbo_ExecutionLog_CredentialID");
+
+                entity.HasOne(d => d.BintSpoofOfCredential)
+                    .WithMany(p => p.DboExecutionLogBintSpoofOfCredential)
+                    .HasForeignKey(d => d.BintSpoofOfCredentialId)
+                    .HasConstraintName("fk_dbo_Credential_ID_to_dbo_ExecutionLog_SpoofOfCredentialID");
+            });
+
             modelBuilder.Entity<DboForm>(entity =>
             {
                 entity.HasKey(e => e.BintId)
@@ -1541,13 +1605,15 @@ namespace System10.Models
 
                 entity.ToTable("dbo_FormAction");
 
-                entity.HasIndex(e => e.Vchr128Name)
-                    .HasName("uq_dbo_FormAction_vchr_128_Name")
-                    .IsUnique();
-
                 entity.Property(e => e.BintId).HasColumnName("bint_ID");
 
+                entity.Property(e => e.BFormListensFor)
+                    .HasColumnName("b_FormListensFor")
+                    .HasDefaultValueSql("0");
+
                 entity.Property(e => e.BSmokeTest).HasColumnName("b_SmokeTest");
+
+                entity.Property(e => e.BintActionId).HasColumnName("bint_ActionID");
 
                 entity.Property(e => e.BintCreatorCredentialId).HasColumnName("bint_CreatorCredentialID");
 
@@ -1571,20 +1637,6 @@ namespace System10.Models
 
                 entity.Property(e => e.IParameterBasisId).HasColumnName("i_ParameterBasisID");
 
-                entity.Property(e => e.Nvch128Caption)
-                    .IsRequired()
-                    .HasColumnName("nvch_128_Caption")
-                    .HasMaxLength(128);
-
-                entity.Property(e => e.Nvch4000Description)
-                    .IsRequired()
-                    .HasColumnName("nvch_4000_Description");
-
-                entity.Property(e => e.Vchr128Name)
-                    .IsRequired()
-                    .HasColumnName("vchr_128_Name")
-                    .HasColumnType("varchar(128)");
-
                 entity.Property(e => e.Vchr256CreatedContext)
                     .IsRequired()
                     .HasColumnName("vchr_256_CreatedContext")
@@ -1594,6 +1646,12 @@ namespace System10.Models
                     .IsRequired()
                     .HasColumnName("vchr_256_ModifiedContext")
                     .HasColumnType("varchar(256)");
+
+                entity.HasOne(d => d.BintAction)
+                    .WithMany(p => p.DboFormAction)
+                    .HasForeignKey(d => d.BintActionId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("fk_dbo_Action_ID_to_dbo_FormAction_ActionID");
 
                 entity.HasOne(d => d.BintCreatorCredential)
                     .WithMany(p => p.DboFormActionBintCreatorCredential)
@@ -1993,43 +2051,6 @@ namespace System10.Models
                     .HasForeignKey(d => d.IInterfaceAvailabilityId)
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("fk_lkp_InterfaceAvailability_ID_to_dbo_ModuleWorkflow_InterfaceAvailabilityID");
-            });
-
-            modelBuilder.Entity<DboPermissionLog>(entity =>
-            {
-                entity.HasKey(e => e.BintId)
-                    .HasName("pk_PermissionLog_bint_ID");
-
-                entity.ToTable("dbo_PermissionLog");
-
-                entity.Property(e => e.BintId).HasColumnName("bint_ID");
-
-                entity.Property(e => e.BSmokeTest).HasColumnName("b_SmokeTest");
-
-                entity.Property(e => e.BintCredentialId).HasColumnName("bint_CredentialID");
-
-                entity.Property(e => e.BintSpoofOfCredentialId).HasColumnName("bint_SpoofOfCredentialID");
-
-                entity.Property(e => e.DtCreated)
-                    .HasColumnName("dt_Created")
-                    .HasColumnType("datetime")
-                    .HasDefaultValueSql("getdate()");
-
-                entity.Property(e => e.Vchr256Context)
-                    .IsRequired()
-                    .HasColumnName("vchr_256_Context")
-                    .HasColumnType("varchar(256)");
-
-                entity.HasOne(d => d.BintCredential)
-                    .WithMany(p => p.DboPermissionLogBintCredential)
-                    .HasForeignKey(d => d.BintCredentialId)
-                    .OnDelete(DeleteBehavior.Restrict)
-                    .HasConstraintName("fk_dbo_Credential_ID_to_dbo_PermissionLog_CredentialID");
-
-                entity.HasOne(d => d.BintSpoofOfCredential)
-                    .WithMany(p => p.DboPermissionLogBintSpoofOfCredential)
-                    .HasForeignKey(d => d.BintSpoofOfCredentialId)
-                    .HasConstraintName("fk_dbo_Credential_ID_to_dbo_PermissionLog_SpoofOfCredentialID");
             });
 
             modelBuilder.Entity<DboPushNotification>(entity =>
@@ -2712,9 +2733,15 @@ namespace System10.Models
 
                 entity.Property(e => e.ICategoryId).HasColumnName("i_CategoryID");
 
-                entity.Property(e => e.IDataRetentionScheduleId).HasColumnName("i_DataRetentionScheduleID");
+                entity.Property(e => e.IDataRetentionScheduleId)
+                    .HasColumnName("i_DataRetentionScheduleID")
+                    .HasDefaultValueSql("1");
 
                 entity.Property(e => e.IInterfaceAvailabilityId).HasColumnName("i_InterfaceAvailabilityID");
+
+                entity.Property(e => e.IScheduleBasisId)
+                    .HasColumnName("i_ScheduleBasisID")
+                    .HasDefaultValueSql("1");
 
                 entity.Property(e => e.Nvch128Caption)
                     .IsRequired()
@@ -2822,6 +2849,12 @@ namespace System10.Models
                     .HasForeignKey(d => d.IInterfaceAvailabilityId)
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("fk_lkp_InterfaceAvailability_ID_to_dbo_Workflow_InterfaceAvailabilityID");
+
+                entity.HasOne(d => d.IScheduleBasis)
+                    .WithMany(p => p.DboWorkflow)
+                    .HasForeignKey(d => d.IScheduleBasisId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("fk_lkp_ScheduleBasis_ID_to_dbo_Workflow_ScheduleBasisID");
             });
 
             modelBuilder.Entity<DboWorkflowInstance>(entity =>
@@ -3060,6 +3093,96 @@ namespace System10.Models
                     .HasForeignKey(d => d.IWorkflowStepTypeId)
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("fk_lkp_WorkflowStepType_ID_to_dbo_WorkflowStep_WorkflowStepTypeID");
+            });
+
+            modelBuilder.Entity<DboWorkflowStepAction>(entity =>
+            {
+                entity.HasKey(e => e.BintId)
+                    .HasName("pk_WorkflowStepAction_bint_ID");
+
+                entity.ToTable("dbo_WorkflowStepAction");
+
+                entity.Property(e => e.BintId).HasColumnName("bint_ID");
+
+                entity.Property(e => e.BFormListensFor)
+                    .HasColumnName("b_FormListensFor")
+                    .HasDefaultValueSql("0");
+
+                entity.Property(e => e.BSmokeTest).HasColumnName("b_SmokeTest");
+
+                entity.Property(e => e.BintActionId).HasColumnName("bint_ActionID");
+
+                entity.Property(e => e.BintCreatorCredentialId).HasColumnName("bint_CreatorCredentialID");
+
+                entity.Property(e => e.BintCreatorSpoofOfCredentialId).HasColumnName("bint_CreatorSpoofOfCredentialID");
+
+                entity.Property(e => e.BintModifierCredentialId).HasColumnName("bint_ModifierCredentialID");
+
+                entity.Property(e => e.BintModifierSpoofOfCredentialId).HasColumnName("bint_ModifierSpoofOfCredentialID");
+
+                entity.Property(e => e.BintWorkflowStepId).HasColumnName("bint_WorkflowStepID");
+
+                entity.Property(e => e.DtCreated)
+                    .HasColumnName("dt_Created")
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("getdate()");
+
+                entity.Property(e => e.DtModified)
+                    .HasColumnName("dt_Modified")
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("getdate()");
+
+                entity.Property(e => e.IParameterBasisId).HasColumnName("i_ParameterBasisID");
+
+                entity.Property(e => e.Vchr256CreatedContext)
+                    .IsRequired()
+                    .HasColumnName("vchr_256_CreatedContext")
+                    .HasColumnType("varchar(256)");
+
+                entity.Property(e => e.Vchr256ModifiedContext)
+                    .IsRequired()
+                    .HasColumnName("vchr_256_ModifiedContext")
+                    .HasColumnType("varchar(256)");
+
+                entity.HasOne(d => d.BintAction)
+                    .WithMany(p => p.DboWorkflowStepAction)
+                    .HasForeignKey(d => d.BintActionId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("fk_dbo_Action_ID_to_dbo_WorkflowStepAction_ActionID");
+
+                entity.HasOne(d => d.BintCreatorCredential)
+                    .WithMany(p => p.DboWorkflowStepActionBintCreatorCredential)
+                    .HasForeignKey(d => d.BintCreatorCredentialId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("fk_dbo_Credential_ID_to_dbo_WorkflowStepAction_CreatorCredentialID");
+
+                entity.HasOne(d => d.BintCreatorSpoofOfCredential)
+                    .WithMany(p => p.DboWorkflowStepActionBintCreatorSpoofOfCredential)
+                    .HasForeignKey(d => d.BintCreatorSpoofOfCredentialId)
+                    .HasConstraintName("fk_dbo_Credential_ID_to_dbo_WorkflowStepAction_CreatorSpoofOfCredentialID");
+
+                entity.HasOne(d => d.BintModifierCredential)
+                    .WithMany(p => p.DboWorkflowStepActionBintModifierCredential)
+                    .HasForeignKey(d => d.BintModifierCredentialId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("fk_dbo_Credential_ID_to_dbo_WorkflowStepAction_ModifierCredentialID");
+
+                entity.HasOne(d => d.BintModifierSpoofOfCredential)
+                    .WithMany(p => p.DboWorkflowStepActionBintModifierSpoofOfCredential)
+                    .HasForeignKey(d => d.BintModifierSpoofOfCredentialId)
+                    .HasConstraintName("fk_dbo_Credential_ID_to_dbo_WorkflowStepAction_ModifierSpoofOfCredentialID");
+
+                entity.HasOne(d => d.BintWorkflowStep)
+                    .WithMany(p => p.DboWorkflowStepAction)
+                    .HasForeignKey(d => d.BintWorkflowStepId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("fk_dbo_WorkflowWorkflowStep_ID_to_dbo_WorkflowStepAction_WorkflowStepID");
+
+                entity.HasOne(d => d.IParameterBasis)
+                    .WithMany(p => p.DboWorkflowStepAction)
+                    .HasForeignKey(d => d.IParameterBasisId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("fk_lkp_ParameterBasis_ID_to_dbo_WorkflowStepAction_ParameterBasisID");
             });
 
             modelBuilder.Entity<DboWorkflowStepFieldConfiguration>(entity =>
@@ -3451,6 +3574,68 @@ namespace System10.Models
                     .HasConstraintName("fk_lkp_PeriodicityUnit_ID_to_lkp_DataRetentionSchedule_FlagPeriodicityUnitID");
             });
 
+            modelBuilder.Entity<LkpDataSourceType>(entity =>
+            {
+                entity.HasKey(e => e.IId)
+                    .HasName("pk_DataSourceType_i_ID");
+
+                entity.ToTable("lkp_DataSourceType", "lkp");
+
+                entity.Property(e => e.IId).HasColumnName("i_ID");
+
+                entity.Property(e => e.BSmokeTest).HasColumnName("b_SmokeTest");
+
+                entity.Property(e => e.BintCreatorCredentialId).HasColumnName("bint_CreatorCredentialID");
+
+                entity.Property(e => e.BintCreatorSpoofOfCredentialId).HasColumnName("bint_CreatorSpoofOfCredentialID");
+
+                entity.Property(e => e.BintModifierCredentialId).HasColumnName("bint_ModifierCredentialID");
+
+                entity.Property(e => e.BintModifierSpoofOfCredentialId).HasColumnName("bint_ModifierSpoofOfCredentialID");
+
+                entity.Property(e => e.DtCreated)
+                    .HasColumnName("dt_Created")
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("getdate()");
+
+                entity.Property(e => e.DtModified)
+                    .HasColumnName("dt_Modified")
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("getdate()");
+
+                entity.Property(e => e.Vchr256CreatedContext)
+                    .IsRequired()
+                    .HasColumnName("vchr_256_CreatedContext")
+                    .HasColumnType("varchar(256)");
+
+                entity.Property(e => e.Vchr256ModifiedContext)
+                    .IsRequired()
+                    .HasColumnName("vchr_256_ModifiedContext")
+                    .HasColumnType("varchar(256)");
+
+                entity.HasOne(d => d.BintCreatorCredential)
+                    .WithMany(p => p.LkpDataSourceTypeBintCreatorCredential)
+                    .HasForeignKey(d => d.BintCreatorCredentialId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("fk_dbo_Credential_ID_to_lkp_DataSourceType_CreatorCredentialID");
+
+                entity.HasOne(d => d.BintCreatorSpoofOfCredential)
+                    .WithMany(p => p.LkpDataSourceTypeBintCreatorSpoofOfCredential)
+                    .HasForeignKey(d => d.BintCreatorSpoofOfCredentialId)
+                    .HasConstraintName("fk_dbo_Credential_ID_to_lkp_DataSourceType_CreatorSpoofOfCredentialID");
+
+                entity.HasOne(d => d.BintModifierCredential)
+                    .WithMany(p => p.LkpDataSourceTypeBintModifierCredential)
+                    .HasForeignKey(d => d.BintModifierCredentialId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("fk_dbo_Credential_ID_to_lkp_DataSourceType_ModifierCredentialID");
+
+                entity.HasOne(d => d.BintModifierSpoofOfCredential)
+                    .WithMany(p => p.LkpDataSourceTypeBintModifierSpoofOfCredential)
+                    .HasForeignKey(d => d.BintModifierSpoofOfCredentialId)
+                    .HasConstraintName("fk_dbo_Credential_ID_to_lkp_DataSourceType_ModifierSpoofOfCredentialID");
+            });
+
             modelBuilder.Entity<LkpDynamicDataEndpoint>(entity =>
             {
                 entity.HasKey(e => e.IId)
@@ -3520,9 +3705,16 @@ namespace System10.Models
 
                 entity.ToTable("lkp_DynamicDataHierarchy", "lkp");
 
+                entity.HasIndex(e => new { e.IParentDynamicDataEndpointId, e.IChildDynamicDataEndpointId })
+                    .HasName("uq_lkp_DynamicDataHierarchy_UniqueCombination")
+                    .IsUnique();
+
                 entity.Property(e => e.IId).HasColumnName("i_ID");
 
-                entity.Property(e => e.BDefaultChildRecord).HasColumnName("b_DefaultChildRecord");
+                entity.Property(e => e.BDefaultChildRecord)
+                    .IsRequired()
+                    .HasColumnName("b_DefaultChildRecord")
+                    .HasColumnType("char(1)");
 
                 entity.Property(e => e.BSmokeTest).HasColumnName("b_SmokeTest");
 
@@ -4698,6 +4890,68 @@ namespace System10.Models
                     .HasConstraintName("fk_dbo_Credential_ID_to_lkp_ReExecuteOnNext_ModifierSpoofOfCredentialID");
             });
 
+            modelBuilder.Entity<LkpScheduleBasis>(entity =>
+            {
+                entity.HasKey(e => e.IId)
+                    .HasName("pk_ScheduleBasis_i_ID");
+
+                entity.ToTable("lkp_ScheduleBasis", "lkp");
+
+                entity.Property(e => e.IId).HasColumnName("i_ID");
+
+                entity.Property(e => e.BSmokeTest).HasColumnName("b_SmokeTest");
+
+                entity.Property(e => e.BintCreatorCredentialId).HasColumnName("bint_CreatorCredentialID");
+
+                entity.Property(e => e.BintCreatorSpoofOfCredentialId).HasColumnName("bint_CreatorSpoofOfCredentialID");
+
+                entity.Property(e => e.BintModifierCredentialId).HasColumnName("bint_ModifierCredentialID");
+
+                entity.Property(e => e.BintModifierSpoofOfCredentialId).HasColumnName("bint_ModifierSpoofOfCredentialID");
+
+                entity.Property(e => e.DtCreated)
+                    .HasColumnName("dt_Created")
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("getdate()");
+
+                entity.Property(e => e.DtModified)
+                    .HasColumnName("dt_Modified")
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("getdate()");
+
+                entity.Property(e => e.Vchr256CreatedContext)
+                    .IsRequired()
+                    .HasColumnName("vchr_256_CreatedContext")
+                    .HasColumnType("varchar(256)");
+
+                entity.Property(e => e.Vchr256ModifiedContext)
+                    .IsRequired()
+                    .HasColumnName("vchr_256_ModifiedContext")
+                    .HasColumnType("varchar(256)");
+
+                entity.HasOne(d => d.BintCreatorCredential)
+                    .WithMany(p => p.LkpScheduleBasisBintCreatorCredential)
+                    .HasForeignKey(d => d.BintCreatorCredentialId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("fk_dbo_Credential_ID_to_lkp_ScheduleBasis_CreatorCredentialID");
+
+                entity.HasOne(d => d.BintCreatorSpoofOfCredential)
+                    .WithMany(p => p.LkpScheduleBasisBintCreatorSpoofOfCredential)
+                    .HasForeignKey(d => d.BintCreatorSpoofOfCredentialId)
+                    .HasConstraintName("fk_dbo_Credential_ID_to_lkp_ScheduleBasis_CreatorSpoofOfCredentialID");
+
+                entity.HasOne(d => d.BintModifierCredential)
+                    .WithMany(p => p.LkpScheduleBasisBintModifierCredential)
+                    .HasForeignKey(d => d.BintModifierCredentialId)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("fk_dbo_Credential_ID_to_lkp_ScheduleBasis_ModifierCredentialID");
+
+                entity.HasOne(d => d.BintModifierSpoofOfCredential)
+                    .WithMany(p => p.LkpScheduleBasisBintModifierSpoofOfCredential)
+                    .HasForeignKey(d => d.BintModifierSpoofOfCredentialId)
+                    .HasConstraintName("fk_dbo_Credential_ID_to_lkp_ScheduleBasis_ModifierSpoofOfCredentialID");
+            });
+
             modelBuilder.Entity<LkpSocialConversationScope>(entity =>
             {
                 entity.HasKey(e => e.IId)
@@ -5153,13 +5407,13 @@ namespace System10.Models
         public virtual DbSet<DboDataSourceParameter> DboDataSourceParameter { get; set; }
         public virtual DbSet<DboDynamicDataMap> DboDynamicDataMap { get; set; }
         public virtual DbSet<DboEmailServer> DboEmailServer { get; set; }
+        public virtual DbSet<DboExecutionLog> DboExecutionLog { get; set; }
         public virtual DbSet<DboForm> DboForm { get; set; }
         public virtual DbSet<DboFormAction> DboFormAction { get; set; }
         public virtual DbSet<DboFormFieldConfiguration> DboFormFieldConfiguration { get; set; }
         public virtual DbSet<DboFormFileAttachment> DboFormFileAttachment { get; set; }
         public virtual DbSet<DboModule> DboModule { get; set; }
         public virtual DbSet<DboModuleWorkflow> DboModuleWorkflow { get; set; }
-        public virtual DbSet<DboPermissionLog> DboPermissionLog { get; set; }
         public virtual DbSet<DboPushNotification> DboPushNotification { get; set; }
         public virtual DbSet<DboPushNotificationDismissal> DboPushNotificationDismissal { get; set; }
         public virtual DbSet<DboPushNotificationTarget> DboPushNotificationTarget { get; set; }
@@ -5171,11 +5425,13 @@ namespace System10.Models
         public virtual DbSet<DboWorkflow> DboWorkflow { get; set; }
         public virtual DbSet<DboWorkflowInstance> DboWorkflowInstance { get; set; }
         public virtual DbSet<DboWorkflowStep> DboWorkflowStep { get; set; }
+        public virtual DbSet<DboWorkflowStepAction> DboWorkflowStepAction { get; set; }
         public virtual DbSet<DboWorkflowStepFieldConfiguration> DboWorkflowStepFieldConfiguration { get; set; }
         public virtual DbSet<LkpBackingMode> LkpBackingMode { get; set; }
         public virtual DbSet<LkpCredentialConfiguration> LkpCredentialConfiguration { get; set; }
         public virtual DbSet<LkpCredentialType> LkpCredentialType { get; set; }
         public virtual DbSet<LkpDataRetentionSchedule> LkpDataRetentionSchedule { get; set; }
+        public virtual DbSet<LkpDataSourceType> LkpDataSourceType { get; set; }
         public virtual DbSet<LkpDynamicDataEndpoint> LkpDynamicDataEndpoint { get; set; }
         public virtual DbSet<LkpDynamicDataHierarchy> LkpDynamicDataHierarchy { get; set; }
         public virtual DbSet<LkpDynamicDataType> LkpDynamicDataType { get; set; }
@@ -5195,6 +5451,7 @@ namespace System10.Models
         public virtual DbSet<LkpPermission> LkpPermission { get; set; }
         public virtual DbSet<LkpPermissionType> LkpPermissionType { get; set; }
         public virtual DbSet<LkpReExecuteOnNext> LkpReExecuteOnNext { get; set; }
+        public virtual DbSet<LkpScheduleBasis> LkpScheduleBasis { get; set; }
         public virtual DbSet<LkpSocialConversationScope> LkpSocialConversationScope { get; set; }
         public virtual DbSet<LkpSpecialDataReference> LkpSpecialDataReference { get; set; }
         public virtual DbSet<LkpSystemConfiguration> LkpSystemConfiguration { get; set; }
@@ -5203,9 +5460,9 @@ namespace System10.Models
         public virtual DbSet<LkpWorkflowCategory> LkpWorkflowCategory { get; set; }
         public virtual DbSet<LkpWorkflowStepType> LkpWorkflowStepType { get; set; }
 
+        // Unable to generate entity type for table 'tst.tst_Data_GetNameParts'. Please see the warning messages.
         // Unable to generate entity type for table 'tst.tst_Results_GetNameParts'. Please see the warning messages.
         // Unable to generate entity type for table 'tst.tst_Results_GetUserLocalizedValues'. Please see the warning messages.
-        // Unable to generate entity type for table 'tst.tst_Data_GetNameParts'. Please see the warning messages.
         // Unable to generate entity type for table 'tst.tst_Data_GetFieldInfo'. Please see the warning messages.
         // Unable to generate entity type for table 'tst.tst_Data_GetUserLocalizedValues'. Please see the warning messages.
         // Unable to generate entity type for table 'tst.tst_Results_GetFieldInfo'. Please see the warning messages.

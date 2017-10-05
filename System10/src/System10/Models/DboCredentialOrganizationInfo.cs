@@ -27,6 +27,10 @@ namespace System10.Models
         public bool BAllowIpsignon { get; set; }
         public bool BAllowEmailAssociation { get; set; }
         public bool BAllowSelfRegistration { get; set; }
+        public string Vchr64LdaphostName { get; set; }
+        public int? ILdapportNumber { get; set; }
+        public bool BLdapviaSsl { get; set; }
+        public bool BAllowLdapauthentication { get; set; }
 
         public virtual DboCredential BintCreatorCredential { get; set; }
         public virtual DboCredential BintCreatorSpoofOfCredential { get; set; }

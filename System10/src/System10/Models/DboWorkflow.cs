@@ -24,6 +24,7 @@ namespace System10.Models
         public long? BintAction1Id { get; set; }
         public int ICategoryId { get; set; }
         public int IDataRetentionScheduleId { get; set; }
+        public int IScheduleBasisId { get; set; }
         public long? BintAction2Id { get; set; }
         public long? BintAction3Id { get; set; }
         public long? BintAction4Id { get; set; }
@@ -57,5 +58,6 @@ namespace System10.Models
         public virtual LkpWorkflowCategory ICategory { get; set; }
         public virtual LkpDataRetentionSchedule IDataRetentionSchedule { get; set; }
         public virtual LkpInterfaceAvailability IInterfaceAvailability { get; set; }
+        public virtual LkpScheduleBasis IScheduleBasis { get; set; }
     }
 }

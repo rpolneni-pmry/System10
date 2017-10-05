@@ -14,6 +14,7 @@ namespace System10.Models
             DboFormBintAction4 = new HashSet<DboForm>();
             DboFormBintAction5 = new HashSet<DboForm>();
             DboFormBintAction6 = new HashSet<DboForm>();
+            DboFormAction = new HashSet<DboFormAction>();
             DboWorkflowBintAction1 = new HashSet<DboWorkflow>();
             DboWorkflowBintAction2 = new HashSet<DboWorkflow>();
             DboWorkflowBintAction3 = new HashSet<DboWorkflow>();
@@ -26,6 +27,7 @@ namespace System10.Models
             DboWorkflowStepBintAction4 = new HashSet<DboWorkflowStep>();
             DboWorkflowStepBintAction5 = new HashSet<DboWorkflowStep>();
             DboWorkflowStepBintAction6 = new HashSet<DboWorkflowStep>();
+            DboWorkflowStepAction = new HashSet<DboWorkflowStepAction>();
         }
 
         public long BintId { get; set; }
@@ -53,6 +55,7 @@ namespace System10.Models
         public virtual ICollection<DboForm> DboFormBintAction4 { get; set; }
         public virtual ICollection<DboForm> DboFormBintAction5 { get; set; }
         public virtual ICollection<DboForm> DboFormBintAction6 { get; set; }
+        public virtual ICollection<DboFormAction> DboFormAction { get; set; }
         public virtual ICollection<DboWorkflow> DboWorkflowBintAction1 { get; set; }
         public virtual ICollection<DboWorkflow> DboWorkflowBintAction2 { get; set; }
         public virtual ICollection<DboWorkflow> DboWorkflowBintAction3 { get; set; }
@@ -65,6 +68,7 @@ namespace System10.Models
         public virtual ICollection<DboWorkflowStep> DboWorkflowStepBintAction4 { get; set; }
         public virtual ICollection<DboWorkflowStep> DboWorkflowStepBintAction5 { get; set; }
         public virtual ICollection<DboWorkflowStep> DboWorkflowStepBintAction6 { get; set; }
+        public virtual ICollection<DboWorkflowStepAction> DboWorkflowStepAction { get; set; }
         public virtual DboCredential BintCreatorCredential { get; set; }
         public virtual DboCredential BintCreatorSpoofOfCredential { get; set; }
         public virtual DboCredential BintModifierCredential { get; set; }

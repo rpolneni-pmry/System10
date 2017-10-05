@@ -3,12 +3,11 @@ using System.Collections.Generic;
 
 namespace System10.Models
 {
-    public partial class LkpDynamicDataHierarchy
+    public partial class DboWorkflowStepAction
     {
-        public int IId { get; set; }
-        public string BDefaultChildRecord { get; set; }
-        public int IParentDynamicDataEndpointId { get; set; }
-        public int IChildDynamicDataEndpointId { get; set; }
+        public long BintId { get; set; }
+        public bool BFormListensFor { get; set; }
+        public int IParameterBasisId { get; set; }
         public DateTime DtCreated { get; set; }
         public string Vchr256CreatedContext { get; set; }
         public long BintCreatorCredentialId { get; set; }
@@ -18,12 +17,15 @@ namespace System10.Models
         public long BintModifierCredentialId { get; set; }
         public long? BintModifierSpoofOfCredentialId { get; set; }
         public bool BSmokeTest { get; set; }
+        public long BintWorkflowStepId { get; set; }
+        public long BintActionId { get; set; }
 
+        public virtual DboAction BintAction { get; set; }
         public virtual DboCredential BintCreatorCredential { get; set; }
         public virtual DboCredential BintCreatorSpoofOfCredential { get; set; }
         public virtual DboCredential BintModifierCredential { get; set; }
         public virtual DboCredential BintModifierSpoofOfCredential { get; set; }
-        public virtual LkpDynamicDataEndpoint IChildDynamicDataEndpoint { get; set; }
-        public virtual LkpDynamicDataEndpoint IParentDynamicDataEndpoint { get; set; }
+        public virtual DboWorkflowStep BintWorkflowStep { get; set; }
+        public virtual LkpParameterBasis IParameterBasis { get; set; }
     }
 }

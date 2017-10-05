@@ -3,12 +3,14 @@ using System.Collections.Generic;
 
 namespace System10.Models
 {
-    public partial class LkpDynamicDataHierarchy
+    public partial class LkpDataSourceType
     {
+        public LkpDataSourceType()
+        {
+            DboDataSource = new HashSet<DboDataSource>();
+        }
+
         public int IId { get; set; }
-        public string BDefaultChildRecord { get; set; }
-        public int IParentDynamicDataEndpointId { get; set; }
-        public int IChildDynamicDataEndpointId { get; set; }
         public DateTime DtCreated { get; set; }
         public string Vchr256CreatedContext { get; set; }
         public long BintCreatorCredentialId { get; set; }
@@ -19,11 +21,10 @@ namespace System10.Models
         public long? BintModifierSpoofOfCredentialId { get; set; }
         public bool BSmokeTest { get; set; }
 
+        public virtual ICollection<DboDataSource> DboDataSource { get; set; }
         public virtual DboCredential BintCreatorCredential { get; set; }
         public virtual DboCredential BintCreatorSpoofOfCredential { get; set; }
         public virtual DboCredential BintModifierCredential { get; set; }
         public virtual DboCredential BintModifierSpoofOfCredential { get; set; }
-        public virtual LkpDynamicDataEndpoint IChildDynamicDataEndpoint { get; set; }
-        public virtual LkpDynamicDataEndpoint IParentDynamicDataEndpoint { get; set; }
     }
 }

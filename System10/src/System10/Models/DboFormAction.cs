@@ -6,10 +6,8 @@ namespace System10.Models
     public partial class DboFormAction
     {
         public long BintId { get; set; }
+        public bool BFormListensFor { get; set; }
         public int IParameterBasisId { get; set; }
-        public string Nvch128Caption { get; set; }
-        public string Vchr128Name { get; set; }
-        public string Nvch4000Description { get; set; }
         public DateTime DtCreated { get; set; }
         public string Vchr256CreatedContext { get; set; }
         public long BintCreatorCredentialId { get; set; }
@@ -20,7 +18,9 @@ namespace System10.Models
         public long? BintModifierSpoofOfCredentialId { get; set; }
         public bool BSmokeTest { get; set; }
         public long BintFormId { get; set; }
+        public long BintActionId { get; set; }
 
+        public virtual DboAction BintAction { get; set; }
         public virtual DboCredential BintCreatorCredential { get; set; }
         public virtual DboCredential BintCreatorSpoofOfCredential { get; set; }
         public virtual DboForm BintForm { get; set; }
