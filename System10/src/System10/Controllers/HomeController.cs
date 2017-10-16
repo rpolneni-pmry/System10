@@ -1,18 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using System10.Models;
-using System.Text;
-using System.Security.Principal;
-using Novell.Directory.Ldap;
-using Microsoft.AspNetCore.Http.Features;
-using System10.Services;
 
 namespace System10.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : BaseController
     {
 
         private readonly System10Context _context;
@@ -24,12 +17,20 @@ namespace System10.Controllers
         // same network authentication using windows identity
         public IActionResult Index()
         {
+            if (GettSessionUserName() == null || GettSessionUserName() == string.Empty)
+            {
+                return RedirectToAction(nameof(AccountController.Login), "Account", new { debug = "" });
+            }
             return View();
                 
         }
       
         public IActionResult About()
         {
+            if (GettSessionUserName() == null || GettSessionUserName() == string.Empty)
+            {
+                return RedirectToAction(nameof(AccountController.Login), "Account", new { debug = "" });
+            }
             ViewData["Message"] = "Your application description page.";
 
             return View();
@@ -37,6 +38,10 @@ namespace System10.Controllers
 
         public IActionResult Contact()
         {
+            if (GettSessionUserName() == null || GettSessionUserName() == string.Empty)
+            {
+                return RedirectToAction(nameof(AccountController.Login), "Account", new { debug = "" });
+            }
             ViewData["Message"] = "Your contact page.";
 
             return View();

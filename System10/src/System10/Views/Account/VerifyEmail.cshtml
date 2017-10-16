@@ -1,0 +1,63 @@
+@model System10.Models.RegisterviewModel
+
+@{
+
+    ViewData["Title"] = "Verify Email";
+}
+
+<h2>@ViewData["Title"]</h2>
+@using (Html.BeginForm())
+{
+    <div class="row">
+        @if (ViewData["ErrorMessage"] != null)
+        {
+
+            <div class="col-md-12">@ViewData["ErrorMessage"]</div>
+        }
+        
+        <div class="col-md-8">
+            <section>
+                <form asp-controller="Account" asp-action="VerifyEmail" asp-route-returnurl="@ViewData["ReturnUrl"]"  method="post" class="form-horizontal">
+                    <h4> Verify Email</h4>
+                    <hr />
+                    <input type="hidden" name="hdnToken" value="@ViewData["token"]" />
+                    <div class="form-group">
+                        <label asp-for="UserName" class="col-md-3 control-label">Enter Your UserName</label>
+                        <div class="col-md-9">
+                            <input asp-for="UserName" class="form-control" />
+
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Password" class="col-md-3 control-label">Enter Your Password</label>
+                        <div class="col-md-9">
+                            <input asp-for="Password" class="form-control" />
+
+                        </div>
+                    </div>
+                    <div class="form-group">
+                            <button type="submit" class="btn btn-default">Verify</button>
+                        </div>
+                </form>
+            </section>
+        </div>
+
+    </div>
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

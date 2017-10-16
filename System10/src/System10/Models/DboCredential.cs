@@ -123,6 +123,10 @@ namespace System10.Models
             DboSpoofLogBintModifierCredential = new HashSet<DboSpoofLog>();
             DboSpoofLogBintModifierSpoofOfCredential = new HashSet<DboSpoofLog>();
             DboSpoofLogBintSpoofUserCredential = new HashSet<DboSpoofLog>();
+            DboSystemConfigurationBintCreatorCredential = new HashSet<DboSystemConfiguration>();
+            DboSystemConfigurationBintCreatorSpoofOfCredential = new HashSet<DboSystemConfiguration>();
+            DboSystemConfigurationBintModifierCredential = new HashSet<DboSystemConfiguration>();
+            DboSystemConfigurationBintModifierSpoofOfCredential = new HashSet<DboSystemConfiguration>();
             DboWorkflowBintCreatorCredential = new HashSet<DboWorkflow>();
             DboWorkflowBintCreatorSpoofOfCredential = new HashSet<DboWorkflow>();
             DboWorkflowBintModifierCredential = new HashSet<DboWorkflow>();
@@ -249,10 +253,6 @@ namespace System10.Models
             LkpSpecialDataReferenceBintCreatorSpoofOfCredential = new HashSet<LkpSpecialDataReference>();
             LkpSpecialDataReferenceBintModifierCredential = new HashSet<LkpSpecialDataReference>();
             LkpSpecialDataReferenceBintModifierSpoofOfCredential = new HashSet<LkpSpecialDataReference>();
-            LkpSystemConfigurationBintCreatorCredential = new HashSet<LkpSystemConfiguration>();
-            LkpSystemConfigurationBintCreatorSpoofOfCredential = new HashSet<LkpSystemConfiguration>();
-            LkpSystemConfigurationBintModifierCredential = new HashSet<LkpSystemConfiguration>();
-            LkpSystemConfigurationBintModifierSpoofOfCredential = new HashSet<LkpSystemConfiguration>();
             LkpSystemContextTypeBintCreatorCredential = new HashSet<LkpSystemContextType>();
             LkpSystemContextTypeBintCreatorSpoofOfCredential = new HashSet<LkpSystemContextType>();
             LkpSystemContextTypeBintModifierCredential = new HashSet<LkpSystemContextType>();
@@ -403,6 +403,10 @@ namespace System10.Models
         public virtual ICollection<DboSpoofLog> DboSpoofLogBintModifierCredential { get; set; }
         public virtual ICollection<DboSpoofLog> DboSpoofLogBintModifierSpoofOfCredential { get; set; }
         public virtual ICollection<DboSpoofLog> DboSpoofLogBintSpoofUserCredential { get; set; }
+        public virtual ICollection<DboSystemConfiguration> DboSystemConfigurationBintCreatorCredential { get; set; }
+        public virtual ICollection<DboSystemConfiguration> DboSystemConfigurationBintCreatorSpoofOfCredential { get; set; }
+        public virtual ICollection<DboSystemConfiguration> DboSystemConfigurationBintModifierCredential { get; set; }
+        public virtual ICollection<DboSystemConfiguration> DboSystemConfigurationBintModifierSpoofOfCredential { get; set; }
         public virtual ICollection<DboWorkflow> DboWorkflowBintCreatorCredential { get; set; }
         public virtual ICollection<DboWorkflow> DboWorkflowBintCreatorSpoofOfCredential { get; set; }
         public virtual ICollection<DboWorkflow> DboWorkflowBintModifierCredential { get; set; }
@@ -529,10 +533,6 @@ namespace System10.Models
         public virtual ICollection<LkpSpecialDataReference> LkpSpecialDataReferenceBintCreatorSpoofOfCredential { get; set; }
         public virtual ICollection<LkpSpecialDataReference> LkpSpecialDataReferenceBintModifierCredential { get; set; }
         public virtual ICollection<LkpSpecialDataReference> LkpSpecialDataReferenceBintModifierSpoofOfCredential { get; set; }
-        public virtual ICollection<LkpSystemConfiguration> LkpSystemConfigurationBintCreatorCredential { get; set; }
-        public virtual ICollection<LkpSystemConfiguration> LkpSystemConfigurationBintCreatorSpoofOfCredential { get; set; }
-        public virtual ICollection<LkpSystemConfiguration> LkpSystemConfigurationBintModifierCredential { get; set; }
-        public virtual ICollection<LkpSystemConfiguration> LkpSystemConfigurationBintModifierSpoofOfCredential { get; set; }
         public virtual ICollection<LkpSystemContextType> LkpSystemContextTypeBintCreatorCredential { get; set; }
         public virtual ICollection<LkpSystemContextType> LkpSystemContextTypeBintCreatorSpoofOfCredential { get; set; }
         public virtual ICollection<LkpSystemContextType> LkpSystemContextTypeBintModifierCredential { get; set; }

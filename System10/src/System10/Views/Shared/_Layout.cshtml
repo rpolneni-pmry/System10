@@ -36,6 +36,7 @@
                     <li><a asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
                     <li><a asp-area="" asp-controller="Home" asp-action="About">About</a></li>
                     <li><a asp-area="" asp-controller="Home" asp-action="Contact">Contact</a></li>
+                    <li><a asp-area="" asp-controller="Credentials" asp-action="ManageCredentials">ManageCredentials</a></li>
                     @if (HttpContextAccessor.HttpContext.Session.GetString("lUserName") != string.Empty)
                     {
                         <li><a asp-area="" asp-controller="Account" asp-action="Logout">Logout</a></li>

@@ -9,7 +9,7 @@ namespace System10
     {
         public static string GetUserNameFromEmail(string email,bool isDomain=false)
         {
-            String username = string.Empty;
+            String username = email;
             if (email.Contains("@"))
             {
                 String[] userData = email.Split(new[] { '@' });
@@ -22,8 +22,13 @@ namespace System10
             }
             else
             {
-                String[] userData = email.Split(new[] { '\\' });
-                username = userData[1];
+                if(email.Contains("\\"))
+                {
+                    String[] userData = email.Split(new[] { '\\' });
+                    username = userData[1];
+                }
+                
+               
                 return username;
             }
             

@@ -31,6 +31,7 @@ namespace System10.Models
         public int? ILdapportNumber { get; set; }
         public bool BLdapviaSsl { get; set; }
         public bool BAllowLdapauthentication { get; set; }
+        public string Vchr8Ldapdomain { get; set; }
 
         public virtual DboCredential BintCreatorCredential { get; set; }
         public virtual DboCredential BintCreatorSpoofOfCredential { get; set; }

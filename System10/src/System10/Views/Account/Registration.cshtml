@@ -13,7 +13,7 @@
         @if (ViewData["ErrorMessage"] != null)
         {
 
-            <div class="col-md-12">@ViewData["ErrorMessage"]</div>
+            <div class="col-md-12 alert alert-danger">@ViewData["ErrorMessage"]</div>
         }
         
         <div class="col-md-8">
@@ -24,24 +24,40 @@
                     <hr />
 
                     <div class="form-group">
-                        <label asp-for="Email" class="col-md-3 control-label">Enter Your email</label>
-
-                        @*<input asp-for="Vchr32Name" class="form-control" />*@
+                        <label asp-for="Email" class="col-md-3 control-label">Enter Your Email</label>
                         <div class="col-md-9">
-                            @Html.TextBoxFor(u => u.Email)
+                            <input asp-for="Email" class="form-control" />
+                            
                         </div>
                     </div>
                     <div class="form-group">
-                        <div class="col-md-offset-2 col-md-10">
-                            @Html.ActionLink("Log in", "Login", "Account")
-                             <span> | </span>
-                            <button type="submit" class="btn btn-default">Registration</button>
-                            @*@Html.ActionLink("Registration", "Registration", "Home")*@
+                        <label asp-for="UserName" class="col-md-3 control-label">Enter Your UserName</label>
+                        <div class="col-md-9">
+                            <input asp-for="UserName" class="form-control" />
+
                         </div>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Password" class="col-md-3 control-label">Enter Your Password</label>
+                        <div class="col-md-9">
+                            <input asp-for="Password" class="form-control" />
+                          
+                        </div>
+                    </div>
+
+                   
+                                       
+                        <div class="form-group">
+                            <div class="col-md-offset-2 col-md-10">
+                                @Html.ActionLink("Log in", "Login", "Account")
+                                <span> | </span>
+                                <button type="submit" class="btn btn-default">Registration</button>
+                                @*@Html.ActionLink("Registration", "Registration", "Home")*@
+                            </div>
                         </div>
 
 
-                </form>
+</form>
             </section>
         </div>
 

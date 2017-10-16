@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +15,7 @@ using Microsoft.Extensions.Logging;
 
 namespace System10.Controllers
 {
-    public class AccountController : Controller
+    public class AccountController : BaseController
     {
         private readonly System10Context _context;
         private readonly UserManager<ApplicationUser> _userManager;
@@ -45,78 +44,178 @@ namespace System10.Controllers
         //    _context = context;
     
         //}
-        private void SetSessionUserName(string name)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <ex
+        //private void SetSessionUserName(string name)
+        //{
+        //    HttpContext.Session.SetString("lUserName", name);
+        //}
+        public IActionResult AccessDenied()
         {
-            HttpContext.Session.SetString("lUserName", name);
+
+            return View();
+
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        //step 1 user hits the site
         public IActionResult Index()
         {
-            var logusr = User.Identity.Name;
-            //string logusr = User.Identity.Name;
-
-            var loggedInUser = HttpContext.User.Identity as WindowsIdentity;
-            
-           
-            if (loggedInUser?.User?.AccountDomainSid?.Value == "S-1-5-21-2610387755-854405893-2624003543")
+            //step 11 check whether user using self registration link.
+            if (HttpContext.Request.Query["token"].ToString() != string.Empty)
             {
-                // DboCredentialAlternate userCred = _context.DboCredentialAlternate.SingleOrDefault(m => m.Vchr64UserName == GetLoggedInUser(loggedInUser));
-               
-                var winLoginNameTrim = loggedInUser.Name.Split('\\');
-                var winLoginName = winLoginNameTrim.Last();
-                TempData["UserName"] = winLoginName;
-                SetSessionUserName(winLoginName);
-                //checking in CredentialAlternate table 
-                 DboCredentialAlternate userCred = _context.DboCredentialAlternate.SingleOrDefault(m => m.Vchr64UserName == winLoginName);
-               
-                if (userCred != null)
-                {
-                    //Checking in credential table 
-                    var userObject = _context.DboCredential.SingleOrDefault(m => m.BintId == userCred.BintPrimaryCredentialId && m.BEnabled == true);
-
-                    if (userObject != null)
-                    {
-
-                        return RedirectToAction(nameof(CredentialsController.ManageCredentials), "Credentials", new { debug = "" });
-                    }
-
-                }
-
-                new BusinessLayer(_context).CreateWindowsUserCredential(winLoginName);
-
-                return RedirectToAction(nameof(CredentialsController.ManageCredentials), "Credentials", new { debug = "" });
-
-
+                string token = HttpContext.Request.Query["token"].ToString();
+                //step 13
+                return RedirectToAction("VerifyEmail", "Account", new { token = token });
+                //return  this.VerifyEmail(email);
             }
             else
             {
-                //getting IP address and checking against CredentialOrganizationInfo table
-                var remoteIpAddress = HttpContext.Features.Get<IHttpConnectionFeature>()?.RemoteIpAddress.ToString();
+                //step 2 checking user is in our network.
+                string logusr = User.Identity.Name;
+                //string logusr = User.Identity.Name;
 
-                var creOrg = _context.DboCredentialOrganizationInfo.SingleOrDefault(m => m.Vchr40Ip == remoteIpAddress && m.BAllowIpsignon == true);
-                if (creOrg != null)
+                WindowsIdentity loggedInUser = HttpContext.User.Identity as WindowsIdentity;
+
+
+                //if (loggedInUser?.User?.AccountDomainSid?.Value == "S-1-5-21-2610387755-854405893-26240035430")
+                //string sid = _context.DboSystemConfiguration.SingleOrDefault(m => m.IId == 50).v;
+                if (loggedInUser?.User?.AccountDomainSid?.Value == "S-1-5-21-2610387755-854405893-26240035430")
                 {
-                    //Checking in Credential table 
-                    var userObject = _context.DboCredential.SingleOrDefault(m => m.BintId == creOrg.BintCredentialId && m.BEnabled == true);
-                    if (userObject != null)
+                    // DboCredentialAlternate userCred = _context.DboCredentialAlternate.SingleOrDefault(m => m.Vchr64UserName == GetLoggedInUser(loggedInUser));
+
+                    string[] winLoginNameTrim = loggedInUser.Name.Split('\\');
+                    string winLoginName = winLoginNameTrim.Last();
+                    TempData["UserName"] = winLoginName;
+                    SetSessionUserName(winLoginName);
+                    //step 3 checking in CredentialAlternate table 
+                    DboCredentialAlternate userCred = _context.DboCredentialAlternate.SingleOrDefault(m => m.Vchr64UserName == loggedInUser.Name);
+
+                    if (userCred != null)
                     {
-                        TempData["UserName"] = userObject.Vchr32Name;
-                        HttpContext.Session.SetString("lUserName", userObject.Vchr32Name);
-                        return RedirectToAction(nameof(CredentialsController.ManageCredentials), "Credentials", new { debug = "" });
+                        // step 4 Checking in credential table 
+                        DboCredential userObject = _context.DboCredential.SingleOrDefault(m => m.BintId == userCred.BintPrimaryCredentialId && m.BEnabled == true);
+
+                        if (userObject != null)
+                        {
+                            //stpe 5 sign on 
+                            return RedirectToAction(nameof(CredentialsController.ManageCredentials), "Credentials", new { actiontype = "ad" });
+                        }
+
                     }
-                    else
-                    {
-                        return RedirectToAction(nameof(HomeController.Error), "Home", new { debug = "" });
-                    }
+                       
+                    //step 6 creating records for the user.
+                    new BusinessLayer(_context).CreateWindowsUserCredential(winLoginName, loggedInUser.Name);
+
+                    return RedirectToAction(nameof(CredentialsController.ManageCredentials), "Credentials", new { actiontype = "ad" });
+
+
                 }
                 else
                 {
-                    return RedirectToAction(nameof(AccountController.Login), "Account", new { debug = "" });
-                }
+                    //getting IP address and checking against CredentialOrganizationInfo table
+                    string remoteIpAddress = HttpContext.Features.Get<IHttpConnectionFeature>()?.RemoteIpAddress.ToString();
+                    //step 26 checking IP address in COI.
+                    DboCredentialOrganizationInfo creOrg = _context.DboCredentialOrganizationInfo.SingleOrDefault(m => m.Vchr40Ip == remoteIpAddress && m.BAllowIpsignon == true);
+                    if (creOrg != null)
+                    {
+                        //step 11 Checking in Credential table 
+                        DboCredential userObject = _context.DboCredential.SingleOrDefault(m => m.BintId == creOrg.BintCredentialId && m.BEnabled == true);
+                        if (userObject != null)
+                        {
+                            //step 16 sign on as org
+                            TempData["UserName"] = userObject.Vchr32Name;
+                            HttpContext.Session.SetString("lUserName", userObject.Vchr32Name);
+                            return RedirectToAction(nameof(CredentialsController.ManageCredentials), "Credentials", new { actiontype = "ad" });
+                        }
+                        else
+                        {
+                            //setp 10 Access Denied
+                            return RedirectToAction(nameof(AccountController.AccessDenied), "Account", new { debug = "" });
+                            //return RedirectToAction(nameof(HomeController.Error), "Home", new { debug = "" });
+                        }
+                    }
+                    else
+                    {
+                        //step 17 login page
+                        return RedirectToAction(nameof(AccountController.Login), "Account", new { debug = "" });
+                    }
 
+                }
+            }
+
+          
+            
+        }
+/// <summary>
+/// sertet
+/// </summary>
+/// <param name="model">er</param>
+/// <param name="token">tykty</param>
+/// <returns></returns>
+        [HttpPost]
+        public IActionResult VerifyEmail(RegisterviewModel model,string token)
+        {
+            DboEmailVerification dbEmv = _context.DboEmailVerification.SingleOrDefault(m => m.Vchr250Token == token && m.BEnabled == true );
+            if(dbEmv != null)
+            {
+                string username = model.UserName;
+                byte[] password= System.Text.Encoding.Unicode.GetBytes(model.Password);
+                string domainName = Utility.GetUserNameFromEmail(dbEmv.Nvch128Email, true);
+                TempData["UserName"] = username;
+                LoginViewModel mode1 = new LoginViewModel { Email = dbEmv.Nvch128Email };
+
+                DboCredentialOrganizationInfo user = _context.DboCredentialOrganizationInfo.SingleOrDefault(m => m.Vchr128EMailDomain == domainName && m.BAllowEmailAssociation == true && m.BAllowSelfRegistration == true);
+                //validate whether user record exists
+                DboCredential dbCr = _context.DboCredential.SingleOrDefault(m=>m.Vchr32Name ==model.UserName  && m.Bin64PasswordHash == password && m.BEnabled==false);
+                if(dbCr != null)
+                {
+                    //step 6 creating user records.
+                    new BusinessLayer(_context).CreateNormalUserCredential(username, user.BintCredentialId);
+                    TempData["UserName"] = username;
+                    SetSessionUserName(username);
+                    dbEmv.BEnabled = false;
+                    _context.DboEmailVerification.Update(dbEmv);
+                    _context.SaveChanges();
+                    return RedirectToAction(nameof(CredentialsController.ManageCredentials), "Credentials", new { debug = "" });
+                }
+                else
+                {
+                    ViewData["ErroMessage"] = "User doenst not exists";
+                    return View();
+                }
+               
+            }
+            else
+            {
+                //step 10 Access Denied.
+                return RedirectToAction(nameof(AccountController.AccessDenied), "Account", new { debug = "" });
             }
             
         }
+        //step 12 checking for valid link.
+        public IActionResult VerifyEmail(string token)
+        {
+            @ViewData["token"] = token;
+            DboEmailVerification dbEmv = _context.DboEmailVerification.SingleOrDefault(m => m.Vchr250Token == token && m.BEnabled == true);
+            if (dbEmv != null)
+            {
+              
+                return View();
+            }
+            else
+            {
+                //Access denied page
+                return RedirectToAction(nameof(AccountController.AccessDenied), "Account", new { debug = "" });
+            }
 
+          
+        }
         private static WindowsIdentity GetLoggedInUser(WindowsIdentity loggedInUser)
         {
             return loggedInUser;
@@ -124,6 +223,8 @@ namespace System10.Controllers
 
         public IActionResult Login()
         {
+            
+            
             return View();
         }
         [HttpPost]
@@ -137,55 +238,92 @@ namespace System10.Controllers
                 //   cn.Connect("<<hostname>>", 389);
                 // bind with an username and password
                 // this how you can verify the password of an user
-
-                cn.SecureSocketLayer = true;
-                cn.Connect("hqmsdcw01.pomeroy.msft", 636);
+               
                 //    string Username = WindowsIdentity.GetCurrent().Name.ToString();
 
                 //var CurLoggedUser = User.Identity.IsAuthenticated;
 
                 //   string domain = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainNamel;
 
-
-
-                try
+                if(userr.Email.Contains("\\"))
                 {
-                    cn.Bind(userr.Email, userr.Password);
-                    //checking in Credential Alternate Table
-                    DboCredentialAlternate userCred = _context.DboCredentialAlternate.SingleOrDefault(m => m.Vchr64UserName == userr.Email);
-                    if (userCred != null)
+                    string[] winLoginNameTrim = userr.Email.Split('\\');
+                    string winLoginName = winLoginNameTrim.Last();
+                    string domainName = winLoginNameTrim.First();
+                    DboCredentialOrganizationInfo dbCrOrgInfo = _context.DboCredentialOrganizationInfo.FirstOrDefault(m=>m.Vchr8Ldapdomain==(domainName) && m.BAllowLdapauthentication==true);
+                    if(dbCrOrgInfo != null)
                     {
-                        TempData["UserName"] = userr.Email;
-                        HttpContext.Session.SetString("lUserName", userr.Email);
-                        //checking in Credential table
-                        var userObject = _context.DboCredential.SingleOrDefault(m => m.BintId == userCred.BintPrimaryCredentialId && m.BEnabled == true);
-
-                        if (userObject != null)
+                        cn.SecureSocketLayer = true;
+                        // cn.Connect("hqmsdcw01.pomeroy.msft", 636);
+                        cn.Connect(dbCrOrgInfo.Vchr64LdaphostName, dbCrOrgInfo.ILdapportNumber.Value);
+                        try
                         {
+                            cn.Bind(userr.Email, userr.Password);
+                            //step 18 checking in Credential Alternate Table
+                            DboCredentialAlternate userCred = _context.DboCredentialAlternate.SingleOrDefault(m => m.Vchr64UserName == userr.Email);
+                            if (userCred != null)
+                            {
+
+
+                                TempData["UserName"] = winLoginName;
+                                SetSessionUserName(winLoginName);
+
+                                //step 19 checking in Credential table
+                                DboCredential userObject = _context.DboCredential.SingleOrDefault(m => m.BintId == userCred.BintPrimaryCredentialId && m.BEnabled == true);
+
+                                if (userObject != null)
+                                {
+                                    //step 5 sign on as user
+                                    return RedirectToAction(nameof(CredentialsController.ManageCredentials), "Credentials", new { actiontype = "ad" });
+                                }
+                            }
+                            new BusinessLayer(_context).CreateActiveDirectoryUserCredential(userr);
+                            //step 5 sign on user
+
                             return RedirectToAction(nameof(CredentialsController.ManageCredentials), "Credentials", new { actiontype = "ad" });
+
+
+                        }
+                        catch (Exception e)
+                        {
+                            //step 18
+                            int isUseExists = new BusinessLayer(_context).ValidateUser(Utility.GetUserNameFromEmail(userr.Email), userr.Password);
+                            if (isUseExists > 0)
+                            {
+                                //step 5 sign on as system10 user
+                                TempData["UserName"] = userr.Email;
+                                SetSessionUserName(userr.Email);
+                                return RedirectToAction(nameof(HomeController.Index), "Home", new { debug = "" });
+                            }
+                            ViewData["ErrorMessage"] = "Please provide valid user name and password";
                         }
                     }
-                        new BusinessLayer(_context).CreateActiveDirectoryUserCredential(userr);
-
-                    return RedirectToAction(nameof(CredentialsController.ManageCredentials), "Credentials", new { actiontype = "ad" });
-
-
-                }
-                catch (Exception e)
-                {
-                    var isUseExists= new BusinessLayer(_context).ValidateUser(Utility.GetUserNameFromEmail(userr.Email), userr.Password);
-                    if(isUseExists > 0)
+                    else
                     {
-                        HttpContext.Session.SetString("lUserName", userr.Email);
+                        ViewData["ErrorMessage"] = "No domain exists";
+                    }
+                    
+                }
+                else
+                {
+                    int isUseExists = new BusinessLayer(_context).ValidateUser(Utility.GetUserNameFromEmail(userr.Email), userr.Password);
+                    if (isUseExists > 0)
+                    {
+                        TempData["UserName"] = userr.Email;
+                        SetSessionUserName(userr.Email);
                         return RedirectToAction(nameof(HomeController.Index), "Home", new { debug = "" });
                     }
                     ViewData["ErrorMessage"] = "Please provide valid user name and password";
                 }
+
+               
             }
 
 
             return View();
         }
+        
+        
 
         [HttpGet]
         public ActionResult Registration()
@@ -193,20 +331,64 @@ namespace System10.Controllers
             return View();
         }
 
+
+        [HttpGet]
+        public ActionResult EmailConfirmation()
+        {
+            return View();
+        }
+        //step 22 and step 22 self registration.
+
         [HttpPost]
         public ActionResult Registration(Models.RegisterviewModel model)
         {
-            var url = string.Format("{0}://{1}/{2}{3}", Request.Scheme, Request.Host, "Credentials/ManageCredentials/?email=", model.Email);
-            var user = _context.DboCredentialOrganizationInfo.SingleOrDefault(m => m.Vchr128EMailDomain == Utility.GetUserNameFromEmail(model.Email, true) && m.BAllowEmailAssociation == true && m.BAllowSelfRegistration == true);
+            try
+            {
+                //step 23 and step 24 checking in COI table.
+                DboCredentialOrganizationInfo user = _context.DboCredentialOrganizationInfo.SingleOrDefault(m => m.Vchr128EMailDomain == Utility.GetUserNameFromEmail(model.Email, true) && m.BAllowEmailAssociation == true && m.BAllowSelfRegistration == true);
 
-            if (user != null)
-            {
-                new AuthMessageSender().SendEmail(model.Email, "subject", "body message <a href=" + url + ">click here</a>");
+                if (user != null)
+                {
+                    //checking Organizatioanl CredentiID credential table whether the user is enalbled or not.
+                    DboCredential dbCre = _context.DboCredential.SingleOrDefault(m => m.BintId == user.BintCredentialId && m.BEnabled == true);
+                    if (dbCre != null)
+                    {
+                        //check if the user already exists in dbcren
+                        if (_context.DboCredential.SingleOrDefault(m => m.Vchr32Name == model.UserName) != null)
+                        {
+                            ViewData["ErrorMessage"] = "User Name already exists ,Please choose other name";
+                        }
+                        else
+                        {
+                            //step 25 send validation email.
+                            string token = System.Guid.NewGuid().ToString();
+                            var url = string.Format("{0}://{1}/{2}{3}", Request.Scheme, Request.Host, "Account/Index/?token=", token);
+
+                            new BusinessLayer(_context).SaveEmailVerification(model.Email, token);
+                            new BusinessLayer(_context).CreateNewInactiveUserCredential(model);
+
+                            new AuthMessageSender().SendEmail(model.Email, "subject", "body message <a href=" + url + ">click here</a>");
+                            return RedirectToAction("EmailConfirmation", "Account", new { token = token });
+                        }
+
+                          
+                    }
+                    else
+                    {
+                        ViewData["ErrorMessage"] = "You are not a valid user";
+                    }
+
+                }
+                else
+                {
+                    ViewData["ErrorMessage"] = "You are not a valid user";
+                }
             }
-            else
+            catch(Exception ex)
             {
-                ViewData["ErrorMessage"] = "You are not a valid user";
+                ViewData["ErrorMessage"] = ex.Message;
             }
+            
             return View();
         }
 
@@ -225,7 +407,7 @@ namespace System10.Controllers
         public IActionResult ExternalLogin(string provider, string returnUrl = null)
         {
             // Request a redirect to the external login provider.
-            var redirectUrl = Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl });
+            string redirectUrl = Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl });
             var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
             return Challenge(properties, provider);
         }
@@ -251,7 +433,7 @@ namespace System10.Controllers
                 ModelState.AddModelError(string.Empty, $"Error from external provider: {remoteError}");
                 return View(nameof(Login));
             }
-            var info = await _signInManager.GetExternalLoginInfoAsync();
+            ExternalLoginInfo info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
             {
                 return RedirectToAction(nameof(Login));
@@ -277,11 +459,11 @@ namespace System10.Controllers
                 // If the user does not have an account, then ask the user to create an account.
                 ViewData["ReturnUrl"] = returnUrl;
                 ViewData["LoginProvider"] = info.LoginProvider;
-                var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-                var dbAltObj = _context.DboCredentialAlternate.SingleOrDefault(m => m.Vchr64UserName == email.Trim());
+                string email = info.Principal.FindFirstValue(ClaimTypes.Email);
+                DboCredentialAlternate dbAltObj = _context.DboCredentialAlternate.SingleOrDefault(m => m.Vchr64UserName == email.Trim());
                 if(dbAltObj != null)
                 {
-                    var dbCrObj = _context.DboCredential.SingleOrDefault(m => m.BintId == dbAltObj.BintPrimaryCredentialId && m.BEnabled==true);
+                    DboCredential dbCrObj = _context.DboCredential.SingleOrDefault(m => m.BintId == dbAltObj.BintPrimaryCredentialId && m.BEnabled==true);
                     if(dbCrObj != null)
                     {
                         SetSessionUserName(dbCrObj.Vchr32Name);
@@ -309,8 +491,8 @@ namespace System10.Controllers
                 {
                     return View("ExternalLoginFailure");
                 }
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
-                var result = await _userManager.CreateAsync(user);
+                ApplicationUser user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+                IdentityResult result = await _userManager.CreateAsync(user);
                 if (result.Succeeded)
                 {
                     result = await _userManager.AddLoginAsync(user, info);
@@ -337,7 +519,7 @@ namespace System10.Controllers
             {
                 return View("Error");
             }
-            var user = await _userManager.FindByIdAsync(userId);
+            ApplicationUser user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
                 return View("Error");

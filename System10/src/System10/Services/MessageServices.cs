@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using MailKit.Net.Smtp;
 using MimeKit;
 using MailKit.Security;
+using System;
 
 namespace System10.Services
 {
@@ -38,40 +36,53 @@ namespace System10.Services
         }
         public void SendEmail(string email, string subject, string message)
         {
-            string FromAddress = "test@test.com";
-            string FromAdressTitle = "title";
-            //To Address  
-            string ToAddress = email;
-            string ToAdressTitle = "Microsoft ASP.NET Core";
-            string Subject = subject;
-            string BodyContent = message;
-
-            //Smtp Server  
-            string SmtpServer = "smtp.gmail.com";
-            //Smtp Port Number  
-            int SmtpPortNumber = 587;
-
-            MimeMessage mimeMessage = new MimeMessage();
-            mimeMessage.From.Add(new MailboxAddress(FromAdressTitle, FromAddress));
-            mimeMessage.To.Add(new MailboxAddress(ToAdressTitle, ToAddress));
-            mimeMessage.Subject = Subject;
-            mimeMessage.Body = new TextPart("plain")
+            try
             {
-                Text = BodyContent
+                string FromAddress = "rpolneni_cntr@pomeroy.com";
+                //string FromAddress = "ramchander1.net@gmail.com";
+                string FromAdressTitle = "title";
+                //To Address  
+                string ToAddress = email;
+                string ToAdressTitle = "Microsoft ASP.NET Core";
+                string Subject = subject;
+                string BodyContent = message;
 
-            };
+                //Smtp Server  
+                //string SmtpServer = "smtp.gmail.com";
+                 string SmtpServer = "retail.smtp.com";
+                //Smtp Port Number  
+               // int SmtpPortNumber = 587;
+                 int SmtpPortNumber = 465;
 
-            using (var client = new SmtpClient())
-            {
 
-                client.Connect(SmtpServer, SmtpPortNumber, false);
-                // Note: only needed if the SMTP server requires authentication  
-                // Error 5.5.1 Authentication   
-                client.Authenticate(FromAddress, "Password");
-                client.Send(mimeMessage);                
-                client.Disconnect(true);
+                MimeMessage mimeMessage = new MimeMessage();
+                mimeMessage.From.Add(new MailboxAddress(FromAdressTitle, FromAddress));
+                mimeMessage.To.Add(new MailboxAddress(ToAdressTitle, ToAddress));
+                mimeMessage.Subject = Subject;
+                mimeMessage.Body = new TextPart("plain")
+                {
+                    Text = BodyContent
 
+                };
+
+                using (var client = new SmtpClient())
+                {
+
+                    client.Connect(SmtpServer, SmtpPortNumber, false);
+                    // Note: only needed if the SMTP server requires authentication  
+                    // Error 5.5.1 Authentication   
+                    client.Authenticate(FromAddress, "JF(a2mfp02");
+                   // client.Authenticate(FromAddress, "chander@123");
+                    client.Send(mimeMessage);
+                    client.Disconnect(true);
+
+                }
             }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+            
         }
     }
 }

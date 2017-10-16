@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace System10.Models
 {
@@ -13,5 +10,13 @@ namespace System10.Models
         public string Password { get; set; }
 
         public string UserName { get; set; }
+
+        [Required]
+        public string NewPassword { get; set; }
+        [Required]
+        public string ConfirmPassword { get; set; }
+
+        public List<DboCredentialAlternate> dboAlternAte { get; set; }
+        public List<LkpLocalization> localization { get; set; }
     }
 }
